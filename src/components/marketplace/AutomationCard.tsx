@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Star, Bot, Plus, Eye, DollarSign, TrendingUp } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface AutomationCardProps {
   id: string;
@@ -32,6 +33,7 @@ export function AutomationCard({
   tags,
   isActive
 }: AutomationCardProps) {
+  const navigate = useNavigate();
   const profitMargin = ((profit / suggestedPrice) * 100).toFixed(1);
 
   return (
@@ -110,7 +112,12 @@ export function AutomationCard({
       </CardContent>
 
       <CardFooter className="p-6 pt-0 flex gap-2">
-        <Button variant="outline" size="sm" className="flex-1">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="flex-1"
+          onClick={() => navigate(`/automation/${id}`)}
+        >
           <Eye className="w-4 h-4 mr-2" />
           Preview
         </Button>
