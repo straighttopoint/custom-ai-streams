@@ -457,6 +457,26 @@ export default function NewOrder() {
 
               <FormField
                 control={form.control}
+                name="customPrice"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Agreed Price</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="$299 or $99/month"
+                        {...field}
+                      />
+                    </FormControl>
+                    <p className="text-xs text-muted-foreground">
+                      Enter the price you've agreed with your client (e.g., $299 for fixed or $99/month for recurring)
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="specialRequirements"
                 render={({ field }) => (
                   <FormItem>
