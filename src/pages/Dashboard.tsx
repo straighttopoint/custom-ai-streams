@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
 import { Marketplace } from "@/components/marketplace/Marketplace";
+import NewOrder from "./NewOrder";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("marketplace");
@@ -18,7 +19,7 @@ export default function Dashboard() {
       case "active-orders":
         return <div>Active Orders - Coming Soon</div>;
       case "new-order":
-        return <div>New Order - Coming Soon</div>;
+        return <NewOrder />;
       case "analytics":
         return <div>Analytics - Coming Soon</div>;
       case "support":
