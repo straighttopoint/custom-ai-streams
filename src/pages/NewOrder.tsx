@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, UserIcon, BuildingIcon, HashIcon, ClockIcon } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { CalendarIcon, UserIcon, BuildingIcon, HashIcon, ClockIcon, CreditCardIcon, ExternalLinkIcon } from "lucide-react";
 
 const formSchema = z.object({
   clientName: z.string().min(2, "Client name must be at least 2 characters"),
@@ -24,7 +25,10 @@ const formSchema = z.object({
   linkedinProfile: z.string().optional(),
   automationId: z.string().min(1, "Please select an automation"),
   projectDescription: z.string().min(10, "Please provide a detailed project description"),
-  calendlyLink: z.string().url("Please enter a valid Calendly link"),
+  meetingDate: z.string().min(1, "Please select a meeting date and time"),
+  paymentFormat: z.enum(["recurring", "fixed"], {
+    required_error: "Please select a payment format",
+  }),
   specialRequirements: z.string().optional(),
 });
 
@@ -57,7 +61,8 @@ export default function NewOrder() {
       linkedinProfile: "",
       automationId: "",
       projectDescription: "",
-      calendlyLink: "",
+      meetingDate: "",
+      paymentFormat: "fixed" as const,
       specialRequirements: "",
     },
   });
@@ -81,7 +86,7 @@ export default function NewOrder() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 pb-8">
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold">New Order Request</h1>
         <p className="text-muted-foreground">
@@ -326,26 +331,101 @@ export default function NewOrder() {
             </CardContent>
           </Card>
 
-          {/* Scheduling */}
+          {/* Scheduling & Payment */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ClockIcon className="w-5 h-5" />
-                Scheduling & Additional Info
+                Meeting Schedule
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="p-4 bg-muted rounded-lg">
+                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4" />
+                    Book Meeting with Our Team
+                  </h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Schedule a consultation meeting using our unified booking system
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => window.open("https://calendly.com/your-company/consultation", "_blank")}
+                      className="flex items-center gap-2"
+                    >
+                      <ExternalLinkIcon className="w-4 h-4" />
+                      Open Calendly Booking
+                    </Button>
+                    <span className="text-xs text-muted-foreground">Opens in new tab</span>
+                  </div>
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="meetingDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirmed Meeting Date & Time</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., January 15, 2024 at 2:00 PM EST"
+                          {...field}
+                        />
+                      </FormControl>
+                      <p className="text-xs text-muted-foreground">
+                        After booking through Calendly, enter the confirmed date and time here
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Payment Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCardIcon className="w-5 h-5" />
+                Payment Terms
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <FormField
                 control={form.control}
-                name="calendlyLink"
+                name="paymentFormat"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Calendly Meeting Link</FormLabel>
+                  <FormItem className="space-y-3">
+                    <FormLabel>Payment Format</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="https://calendly.com/your-link/meeting"
-                        {...field}
-                      />
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex flex-col space-y-2"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="fixed" id="fixed" />
+                          <label htmlFor="fixed" className="cursor-pointer">
+                            <div>
+                              <p className="font-medium">Fixed Payment</p>
+                              <p className="text-sm text-muted-foreground">One-time payment for the entire project</p>
+                            </div>
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="recurring" id="recurring" />
+                          <label htmlFor="recurring" className="cursor-pointer">
+                            <div>
+                              <p className="font-medium">Recurring Payment</p>
+                              <p className="text-sm text-muted-foreground">Monthly subscription for ongoing automation service</p>
+                            </div>
+                          </label>
+                        </div>
+                      </RadioGroup>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -360,7 +440,7 @@ export default function NewOrder() {
                     <FormLabel>Special Requirements (Optional)</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Any special requirements, deadlines, or additional notes..."
+                        placeholder="Any special requirements, deadlines, custom terms, or additional notes..."
                         {...field}
                       />
                     </FormControl>
