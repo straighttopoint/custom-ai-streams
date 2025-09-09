@@ -489,7 +489,7 @@ export default function NewOrder() {
           </div>
         </form>
       </Form>
-    </div>
+
   </div>
   );
 }
