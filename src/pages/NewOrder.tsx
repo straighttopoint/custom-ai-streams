@@ -29,6 +29,7 @@ const formSchema = z.object({
   paymentFormat: z.enum(["recurring", "fixed"], {
     required_error: "Please select a payment format",
   }),
+  customPrice: z.string().min(1, "Please enter the agreed price"),
   specialRequirements: z.string().optional(),
 });
 
@@ -63,6 +64,7 @@ export default function NewOrder() {
       projectDescription: "",
       meetingDate: "",
       paymentFormat: "fixed" as const,
+      customPrice: "",
       specialRequirements: "",
     },
   });
@@ -86,8 +88,9 @@ export default function NewOrder() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-8">
-      <div className="text-center space-y-2">
+    <div className="min-h-screen bg-background">
+      <div className="max-w-4xl mx-auto space-y-8 py-8">
+        <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold">New Order Request</h1>
         <p className="text-muted-foreground">
           Fill out this form to submit a new automation order for your client
@@ -237,6 +240,26 @@ export default function NewOrder() {
                     <FormControl>
                       <Input placeholder="@username" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="customPrice"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Agreed Price</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="$299 or $99/month"
+                        {...field}
+                      />
+                    </FormControl>
+                    <p className="text-xs text-muted-foreground">
+                      Enter the price you've agreed with your client (e.g., $299 for fixed or $99/month for recurring)
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -452,7 +475,7 @@ export default function NewOrder() {
           </Card>
 
           {/* Submit Button */}
-          <div className="flex justify-end">
+          <div className="flex justify-end pb-8">
             <Button
               type="submit"
               size="lg"
@@ -465,5 +488,6 @@ export default function NewOrder() {
         </form>
       </Form>
     </div>
+  </div>
   );
 }
