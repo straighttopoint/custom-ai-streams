@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
 import { Marketplace } from "@/components/marketplace/Marketplace";
+import { AutomationList } from "@/components/automation/AutomationList";
 import NewOrder from "./NewOrder";
 
 export default function Dashboard() {
@@ -13,7 +14,7 @@ export default function Dashboard() {
       case "marketplace":
         return <Marketplace />;
       case "automation-list":
-        return <div>My Automation List - Coming Soon</div>;
+        return <AutomationList />;
       case "custom-requests":
         return <div>Custom Requests - Coming Soon</div>;
       case "active-orders":
