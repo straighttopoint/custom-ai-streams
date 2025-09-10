@@ -95,7 +95,7 @@ export default function AutomationDetails() {
   const profitMargin = ((automation.profit / automation.suggestedPrice) * 100).toFixed(1);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="max-h-screen bg-background overflow-auto">
       {/* Header */}
       <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4">
