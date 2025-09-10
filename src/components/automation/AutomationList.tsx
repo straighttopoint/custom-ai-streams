@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bot, Settings, Play, Pause, Trash2 } from "lucide-react";
+import { Bot, Trash2 } from "lucide-react";
 
 // Mock data for user's automation list
 const userAutomations = [
@@ -10,7 +10,6 @@ const userAutomations = [
     title: "Social Media Content Calendar",
     category: "Social Media Management",
     cost: 150,
-    isActive: true,
     dateAdded: "2024-01-15",
   },
   {
@@ -18,7 +17,6 @@ const userAutomations = [
     title: "Lead Qualification System",
     category: "Lead Generation",
     cost: 200,
-    isActive: true,
     dateAdded: "2024-01-10",
   },
   {
@@ -26,7 +24,6 @@ const userAutomations = [
     title: "Email Marketing Automation", 
     category: "Email Marketing",
     cost: 120,
-    isActive: false,
     dateAdded: "2024-01-08",
   },
 ];
@@ -56,8 +53,8 @@ export function AutomationList() {
                   </div>
                 </div>
                 
-                <Badge variant={automation.isActive ? "default" : "secondary"}>
-                  {automation.isActive ? "Active" : "Inactive"}
+                <Badge variant="default" className="bg-success text-success-foreground">
+                  Active
                 </Badge>
               </div>
             </CardHeader>
@@ -66,7 +63,7 @@ export function AutomationList() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
                   <div>
-                    <p className="text-sm text-muted-foreground">Monthly Cost</p>
+                    <p className="text-sm text-muted-foreground">Automation Cost</p>
                     <p className="font-semibold">${automation.cost}</p>
                   </div>
                   <div>
@@ -76,30 +73,9 @@ export function AutomationList() {
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Configure
-                  </Button>
-                  
-                  <Button 
-                    variant={automation.isActive ? "secondary" : "default"} 
-                    size="sm"
-                  >
-                    {automation.isActive ? (
-                      <>
-                        <Pause className="w-4 h-4 mr-2" />
-                        Pause
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-4 h-4 mr-2" />
-                        Activate
-                      </>
-                    )}
-                  </Button>
-                  
                   <Button variant="outline" size="sm" className="text-destructive hover:bg-destructive hover:text-destructive-foreground">
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Remove
                   </Button>
                 </div>
               </div>
