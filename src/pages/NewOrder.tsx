@@ -88,7 +88,7 @@ export default function NewOrder() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+
       <div className="max-w-4xl mx-auto space-y-8 py-8">
         <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold">New Order Request</h1>
@@ -490,6 +490,6 @@ export default function NewOrder() {
         </form>
       </Form>
       </div>
-  </div>
+
   );
 }

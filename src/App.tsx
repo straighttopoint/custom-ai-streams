@@ -8,11 +8,12 @@ import Dashboard from "./pages/Dashboard";
 import AutomationDetails from "./pages/AutomationDetails";
 import NewOrder from "./pages/NewOrder";
 import NotFound from "./pages/NotFound";
-
+import "./App.css"
 
 
 const App = () => (
   <>
+  
     <Toaster />
     <Sonner />
     <BrowserRouter>

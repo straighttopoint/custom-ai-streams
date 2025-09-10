@@ -71,7 +71,7 @@ export function Sidebar({ activeTab, onTabChange, isCollapsed, onToggleCollapse 
   ];
 
   return (
-    <div className={cn("bg-card border-r border-border transition-all duration-300", isCollapsed ? "w-16" : "w-64")}>
+    <div className={cn("bg-card border-r max-h-screen border-border transition-all duration-300", isCollapsed ? "w-16" : "w-64")}>
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between">
           {!isCollapsed && (

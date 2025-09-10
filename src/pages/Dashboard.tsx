@@ -30,7 +30,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex max-h-screen overflow-hidden">
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -38,10 +38,9 @@ export default function Dashboard() {
         onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        
-        <main className="flex-1 overflow-auto p-6">
+      <div className="flex-1 flex flex-col">
+          <Header />
+        <main className="flex-1 p-2 max-h-[100%] overflow-auto">
           {renderContent()}
         </main>
       </div>
