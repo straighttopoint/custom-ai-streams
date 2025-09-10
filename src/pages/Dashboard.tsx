@@ -3,6 +3,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
 import { Marketplace } from "@/components/marketplace/Marketplace";
 import { AutomationList } from "@/components/automation/AutomationList";
+import { Analytics } from "@/components/analytics/Analytics";
 import NewOrder from "./NewOrder";
 
 export default function Dashboard() {
@@ -22,7 +23,7 @@ export default function Dashboard() {
       case "new-order":
         return <NewOrder />;
       case "analytics":
-        return <div>Analytics - Coming Soon</div>;
+        return <Analytics />;
       case "support":
         return <div>Support - Coming Soon</div>;
       default:
