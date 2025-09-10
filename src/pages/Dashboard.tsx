@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { Marketplace } from "@/components/marketplace/Marketplace";
 import { AutomationList } from "@/components/automation/AutomationList";
 import { Analytics } from "@/components/analytics/Analytics";
+import { ActiveOrders } from "@/components/orders/ActiveOrders";
 import NewOrder from "./NewOrder";
 
 export default function Dashboard() {
@@ -19,7 +20,7 @@ export default function Dashboard() {
       case "custom-requests":
         return <div>Custom Requests - Coming Soon</div>;
       case "active-orders":
-        return <div>Active Orders - Coming Soon</div>;
+        return <ActiveOrders />;
       case "new-order":
         return <NewOrder />;
       case "analytics":
