@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bot, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // Mock data for user's automation list
 const userAutomations = [
@@ -10,6 +11,7 @@ const userAutomations = [
     title: "Social Media Content Calendar",
     category: "Social Media Management",
     cost: 150,
+    image: null,
     dateAdded: "2024-01-15",
   },
   {
@@ -17,6 +19,7 @@ const userAutomations = [
     title: "Lead Qualification System",
     category: "Lead Generation",
     cost: 200,
+    image: null,
     dateAdded: "2024-01-10",
   },
   {
@@ -24,11 +27,13 @@ const userAutomations = [
     title: "Email Marketing Automation", 
     category: "Email Marketing",
     cost: 120,
+    image: null,
     dateAdded: "2024-01-08",
   },
 ];
 
 export function AutomationList() {
+  const navigate = useNavigate();
   return (
     <div className="space-y-6 overflow-auto">
       <div>
@@ -40,12 +45,24 @@ export function AutomationList() {
 
       <div className="grid gap-4">
         {userAutomations.map((automation) => (
-          <Card key={automation.id} className="hover:shadow-lg transition-shadow">
+          <Card 
+            key={automation.id} 
+            className="hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => navigate(`/automation/${automation.id}`)}
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <Bot className="w-6 h-6 text-primary" />
+                  <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    {automation.image ? (
+                      <img 
+                        src={automation.image} 
+                        alt={automation.title} 
+                        className="w-14 h-14 object-cover rounded" 
+                      />
+                    ) : (
+                      <Bot className="w-8 h-8 text-primary" />
+                    )}
                   </div>
                   <div>
                     <CardTitle className="text-lg">{automation.title}</CardTitle>
@@ -73,7 +90,15 @@ export function AutomationList() {
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" className="text-destructive hover:bg-destructive hover:text-destructive-foreground">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Handle remove logic here
+                    }}
+                  >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Remove
                   </Button>
