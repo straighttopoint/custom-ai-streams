@@ -49,9 +49,6 @@ export default function Dashboard() {
         return <Analytics />;
       case "support":
         return <div>Support - Coming Soon</div>;
-      case "profile":
-        navigate("/profile");
-        return null;
       default:
         return <Marketplace />;
     }
