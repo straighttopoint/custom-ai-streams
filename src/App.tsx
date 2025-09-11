@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { AuthProvider } from "@/hooks/useAuth";
-import { ThemeProvider } from "next-themes";
+
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
@@ -16,7 +16,6 @@ import "./App.css"
 
 const App = () => (
   <>
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
       <Toaster />
       <Sonner />
       <AuthProvider>
@@ -34,7 +33,6 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </AuthProvider>
-    </ThemeProvider>
   </>
 );
 
