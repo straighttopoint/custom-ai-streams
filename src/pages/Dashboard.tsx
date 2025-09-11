@@ -1,15 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
 import { Marketplace } from "@/components/marketplace/Marketplace";
 import { AutomationList } from "@/components/automation/AutomationList";
 import { Analytics } from "@/components/analytics/Analytics";
 import { ActiveOrders } from "@/components/orders/ActiveOrders";
+import { useAuth } from "@/hooks/useAuth";
 import NewOrder from "./NewOrder";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("marketplace");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/auth");
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div>Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   const renderContent = () => {
     switch (activeTab) {
@@ -27,6 +49,9 @@ export default function Dashboard() {
         return <Analytics />;
       case "support":
         return <div>Support - Coming Soon</div>;
+      case "profile":
+        navigate("/profile");
+        return null;
       default:
         return <Marketplace />;
     }

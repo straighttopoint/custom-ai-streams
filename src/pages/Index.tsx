@@ -19,6 +19,9 @@ const Index = () => {
               <Button variant="ghost">About</Button>
               <Button variant="ghost">Features</Button>
               <Button variant="ghost">Pricing</Button>
+              <Button variant="outline" onClick={() => navigate('/auth')}>
+                Sign In
+              </Button>
               <Button onClick={() => navigate('/dashboard')}>
                 Get Started
                 <ArrowRight className="ml-2 h-4 w-4" />

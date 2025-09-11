@@ -12,7 +12,8 @@ import {
   MessageSquare, 
   Settings,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -67,6 +68,11 @@ export function Sidebar({ activeTab, onTabChange, isCollapsed, onToggleCollapse 
       id: "support",
       label: "Support",
       icon: MessageSquare,
+    },
+    {
+      id: "profile",
+      label: "Profile",
+      icon: User,
     },
   ];
 
