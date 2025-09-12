@@ -71,12 +71,12 @@ export function Sidebar({ activeTab, onTabChange, isCollapsed, onToggleCollapse 
   ];
 
   return (
-    <div className={cn("bg-card border-r max-h-screen border-border transition-all duration-300", isCollapsed ? "w-16" : "w-64")}>
+    <div className={cn("bg-card border-r max-h-screen border-border transition-all duration-300", isCollapsed ? "w-16" : "w-48 sm:w-64")}>
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div>
-              <h1 className="text-xl font-bold text-primary">AutoFlow</h1>
+              <h1 className="text-xl font-bold text-primary">Let Us Defy</h1>
               <p className="text-sm text-muted-foreground">AI Automation Platform</p>
             </div>
           )}

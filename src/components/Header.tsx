@@ -18,24 +18,24 @@ export function Header() {
     <header className="bg-card border-b border-border px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="relative">
+          <div className="relative hidden md:block">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input 
               placeholder="Search automations..." 
-              className="pl-10 w-80"
+              className="pl-10 w-60 lg:w-80"
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <div className="hidden sm:flex items-center gap-2 text-sm">
             <Globe className="h-4 w-4" />
-            <span>Global</span>
+            <span className="hidden lg:inline">Global</span>
           </div>
           
-          <div className="flex items-center gap-2 bg-success/10 text-success px-3 py-1 rounded-lg">
+          <div className="flex items-center gap-2 bg-success/10 text-success px-2 sm:px-3 py-1 rounded-lg">
             <DollarSign className="h-4 w-4" />
-            <span className="font-medium">$2,340.50</span>
+            <span className="font-medium text-sm sm:text-base">$2,340.50</span>
           </div>
 
           <Button variant="ghost" size="sm" className="relative">
