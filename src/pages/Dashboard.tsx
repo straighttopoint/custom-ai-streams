@@ -73,7 +73,7 @@ export default function Dashboard() {
   return (
     <div className="flex max-h-screen overflow-hidden">
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
+      <div className="hidden md:block">
         <Sidebar
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -84,7 +84,7 @@ export default function Dashboard() {
 
       {/* Mobile Sidebar Sheet */}
       <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
-        <SheetContent side="left" className="p-0 w-64 lg:hidden">
+        <SheetContent side="left" className="p-0 w-64 md:hidden">
           <SheetHeader>
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
           </SheetHeader>
@@ -103,7 +103,7 @@ export default function Dashboard() {
       <div className="flex-1 flex flex-col">
         <div className="flex items-center">
           {/* Mobile Hamburger Menu */}
-          <div className="lg:hidden">
+          <div className="md:hidden">
             <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="sm" className="m-2">
