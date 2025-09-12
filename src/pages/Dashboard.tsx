@@ -16,6 +16,18 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const handleSetActiveTab = (event: CustomEvent) => {
+      setActiveTab(event.detail);
+    };
+    
+    window.addEventListener('setActiveTab', handleSetActiveTab as EventListener);
+    
+    return () => {
+      window.removeEventListener('setActiveTab', handleSetActiveTab as EventListener);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!loading && !user) {
       navigate("/auth");
     }

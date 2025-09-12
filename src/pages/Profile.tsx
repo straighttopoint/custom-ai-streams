@@ -136,7 +136,14 @@ const Profile = () => {
     <div className="flex max-h-screen overflow-hidden">
       <Sidebar
         activeTab="profile"
-        onTabChange={() => {}}
+        onTabChange={(tab) => {
+          navigate("/dashboard");
+          // Set the active tab in dashboard
+          setTimeout(() => {
+            const event = new CustomEvent('setActiveTab', { detail: tab });
+            window.dispatchEvent(event);
+          }, 100);
+        }}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
