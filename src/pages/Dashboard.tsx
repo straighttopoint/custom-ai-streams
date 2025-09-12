@@ -9,7 +9,7 @@ import { ActiveOrders } from "@/components/orders/ActiveOrders";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import NewOrder from "./NewOrder";
 
 export default function Dashboard() {
@@ -85,6 +85,9 @@ export default function Dashboard() {
       {/* Mobile Sidebar Sheet */}
       <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
         <SheetContent side="left" className="p-0 w-64 lg:hidden">
+          <SheetHeader>
+            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+          </SheetHeader>
           <Sidebar
             activeTab={activeTab}
             onTabChange={(tab) => {
