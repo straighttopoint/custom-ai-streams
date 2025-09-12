@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
+import { Menu } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 interface Profile {
   id: string;
@@ -27,6 +29,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -116,14 +119,27 @@ const Profile = () => {
   if (loading) {
     return (
       <div className="flex max-h-screen overflow-hidden">
-        <Sidebar
-          activeTab="profile"
-          onTabChange={() => {}}
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        />
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block">
+          <Sidebar
+            activeTab="profile"
+            onTabChange={() => {}}
+            isCollapsed={isSidebarCollapsed}
+            onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          />
+        </div>
         <div className="flex-1 flex flex-col">
-          <Header />
+          <div className="flex items-center">
+            {/* Mobile Hamburger Menu */}
+            <div className="lg:hidden">
+              <Button variant="ghost" size="sm" className="m-2" disabled>
+                <Menu className="h-5 w-5" />
+              </Button>
+            </div>
+            <div className="flex-1">
+              <Header />
+            </div>
+          </div>
           <main className="flex-1 p-6 flex items-center justify-center">
             <div>Loading...</div>
           </main>
@@ -134,22 +150,58 @@ const Profile = () => {
 
   return (
     <div className="flex max-h-screen overflow-hidden">
-      <Sidebar
-        activeTab="profile"
-        onTabChange={(tab) => {
-          navigate("/dashboard");
-          // Set the active tab in dashboard
-          setTimeout(() => {
-            const event = new CustomEvent('setActiveTab', { detail: tab });
-            window.dispatchEvent(event);
-          }, 100);
-        }}
-        isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-      />
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block">
+        <Sidebar
+          activeTab="profile"
+          onTabChange={(tab) => {
+            navigate("/dashboard");
+            // Set the active tab in dashboard
+            setTimeout(() => {
+              const event = new CustomEvent('setActiveTab', { detail: tab });
+              window.dispatchEvent(event);
+            }, 100);
+          }}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
+      </div>
+
+      {/* Mobile Sidebar Sheet */}
+      <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+        <SheetContent side="left" className="p-0 w-64 lg:hidden">
+          <Sidebar
+            activeTab="profile"
+            onTabChange={(tab) => {
+              setIsMobileSidebarOpen(false);
+              navigate("/dashboard");
+              setTimeout(() => {
+                const event = new CustomEvent('setActiveTab', { detail: tab });
+                window.dispatchEvent(event);
+              }, 100);
+            }}
+            isCollapsed={false}
+            onToggleCollapse={() => {}}
+          />
+        </SheetContent>
+      </Sheet>
       
       <div className="flex-1 flex flex-col">
-        <Header />
+        <div className="flex items-center">
+          {/* Mobile Hamburger Menu */}
+          <div className="lg:hidden">
+            <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm" className="m-2">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+            </Sheet>
+          </div>
+          <div className="flex-1">
+            <Header />
+          </div>
+        </div>
         <main className="flex-1 p-6 overflow-auto">
           <div className="max-w-2xl mx-auto">
             <Card>

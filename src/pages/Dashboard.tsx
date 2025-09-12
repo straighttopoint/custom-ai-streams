@@ -7,11 +7,15 @@ import { AutomationList } from "@/components/automation/AutomationList";
 import { Analytics } from "@/components/analytics/Analytics";
 import { ActiveOrders } from "@/components/orders/ActiveOrders";
 import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import NewOrder from "./NewOrder";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("marketplace");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -68,15 +72,47 @@ export default function Dashboard() {
 
   return (
     <div className="flex max-h-screen overflow-hidden">
-      <Sidebar
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-      />
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block">
+        <Sidebar
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
+      </div>
+
+      {/* Mobile Sidebar Sheet */}
+      <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+        <SheetContent side="left" className="p-0 w-64 lg:hidden">
+          <Sidebar
+            activeTab={activeTab}
+            onTabChange={(tab) => {
+              setActiveTab(tab);
+              setIsMobileSidebarOpen(false);
+            }}
+            isCollapsed={false}
+            onToggleCollapse={() => {}}
+          />
+        </SheetContent>
+      </Sheet>
       
       <div className="flex-1 flex flex-col">
-          <Header />
+        <div className="flex items-center">
+          {/* Mobile Hamburger Menu */}
+          <div className="lg:hidden">
+            <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm" className="m-2">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+            </Sheet>
+          </div>
+          <div className="flex-1">
+            <Header />
+          </div>
+        </div>
         <main className="flex-1 p-2 max-h-[100%] overflow-auto">
           {renderContent()}
         </main>
