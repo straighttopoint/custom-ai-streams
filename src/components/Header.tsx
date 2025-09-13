@@ -1,6 +1,7 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Search, User, Globe, DollarSign, LogOut } from "lucide-react";
+import { Bell, Search, User, Globe, DollarSign, LogOut, ArrowDownLeft, ArrowUpRight, History } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import {
@@ -10,10 +11,47 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 export function Header() {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const [wallet, setWallet] = useState<any>(null);
+
+  useEffect(() => {
+    if (user) {
+      fetchWallet();
+    }
+  }, [user]);
+
+  const fetchWallet = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('wallets')
+        .select('*')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error) {
+        // If no wallet exists, create one
+        if (error.code === 'PGRST116') {
+          const { data: newWallet, error: createError } = await supabase
+            .from('wallets')
+            .insert({ user_id: user?.id })
+            .select()
+            .single();
+          
+          if (!createError) {
+            setWallet(newWallet);
+          }
+        }
+        return;
+      }
+      setWallet(data);
+    } catch (error) {
+      console.error('Error fetching wallet:', error);
+    }
+  };
   return (
     <header className="bg-card border-b border-border px-6 py-4">
       <div className="flex items-center justify-between">
@@ -33,10 +71,30 @@ export function Header() {
             <span className="hidden lg:inline">Global</span>
           </div>
           
-          <div className="flex items-center gap-2 bg-success/10 text-success px-2 sm:px-3 py-1 rounded-lg">
-            <DollarSign className="h-4 w-4" />
-            <span className="font-medium text-sm sm:text-base">$2,340.50</span>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center gap-2 bg-success/10 text-success px-2 sm:px-3 py-1 rounded-lg cursor-pointer hover:bg-success/20 transition-colors">
+                <DollarSign className="h-4 w-4" />
+                <span className="font-medium text-sm sm:text-base">
+                  ${wallet?.balance?.toFixed(2) || '0.00'}
+                </span>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-card border border-border">
+              <DropdownMenuItem onClick={() => navigate('/deposit')} className="cursor-pointer">
+                <ArrowDownLeft className="mr-2 h-4 w-4" />
+                Deposit
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/withdraw')} className="cursor-pointer">
+                <ArrowUpRight className="mr-2 h-4 w-4" />
+                Withdraw
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/transaction-history')} className="cursor-pointer">
+                <History className="mr-2 h-4 w-4" />
+                Transaction History
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Button variant="ghost" size="sm" className="relative">
             <Bell className="h-4 w-4" />

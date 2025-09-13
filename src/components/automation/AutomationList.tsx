@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bot, Trash2 } from "lucide-react";
+import { Bot, Trash2, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 // Mock data for user's automation list
@@ -36,11 +36,23 @@ export function AutomationList() {
   const navigate = useNavigate();
   return (
     <div className="space-y-6 overflow-auto">
-      <div>
-        <h1 className="text-3xl font-bold">My Automations</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage your automation portfolio. Configure, activate, and monitor your AI automations.
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold">My Automations</h1>
+          <p className="text-muted-foreground mt-2">
+            Manage your automation portfolio. Configure, activate, and monitor your AI automations.
+          </p>
+        </div>
+        <Button 
+          onClick={() => {
+            const event = new CustomEvent('setActiveTab', { detail: 'custom-requests' });
+            window.dispatchEvent(event);
+          }}
+          variant="outline"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Request Custom Automation
+        </Button>
       </div>
 
       <div className="grid gap-4">

@@ -11,6 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import NewOrder from "./NewOrder";
+import Withdraw from "./Withdraw";
+import Deposit from "./Deposit";
+import TransactionHistory from "./TransactionHistory";
+import CustomRequests from "./CustomRequests";
+import Support from "./Support";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("marketplace");
@@ -24,10 +29,23 @@ export default function Dashboard() {
       setActiveTab(event.detail);
     };
     
+    // Handle navigation from header money dropdown
+    const handleNavigation = () => {
+      const path = window.location.pathname;
+      if (path === '/withdraw') setActiveTab('withdraw');
+      else if (path === '/deposit') setActiveTab('deposit');
+      else if (path === '/transaction-history') setActiveTab('transaction-history');
+    };
+    
     window.addEventListener('setActiveTab', handleSetActiveTab as EventListener);
+    window.addEventListener('popstate', handleNavigation);
+    
+    // Check initial path
+    handleNavigation();
     
     return () => {
       window.removeEventListener('setActiveTab', handleSetActiveTab as EventListener);
+      window.removeEventListener('popstate', handleNavigation);
     };
   }, []);
 
@@ -56,7 +74,7 @@ export default function Dashboard() {
       case "automation-list":
         return <AutomationList />;
       case "custom-requests":
-        return <div>Custom Requests - Coming Soon</div>;
+        return <CustomRequests />;
       case "active-orders":
         return <ActiveOrders />;
       case "new-order":
@@ -64,7 +82,13 @@ export default function Dashboard() {
       case "analytics":
         return <Analytics />;
       case "support":
-        return <div>Support - Coming Soon</div>;
+        return <Support />;
+      case "withdraw":
+        return <Withdraw />;
+      case "deposit":
+        return <Deposit />;
+      case "transaction-history":
+        return <TransactionHistory />;
       default:
         return <Marketplace />;
     }
