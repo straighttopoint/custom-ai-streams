@@ -99,8 +99,8 @@ export function AutomationList() {
             Manage your automation portfolio. Configure, activate, and monitor your AI automations.
           </p>
         </div>
-        {automations.length > 0 && (
-          <div className="flex gap-2">
+        <div className="flex gap-2">
+          {automations.length > 0 && (
             <Button 
               onClick={() => {
                 const event = new CustomEvent('setActiveTab', { detail: 'marketplace' });
@@ -110,18 +110,18 @@ export function AutomationList() {
             >
               Browse Marketplace
             </Button>
-            <Button 
-              onClick={() => {
-                const event = new CustomEvent('setActiveTab', { detail: 'custom-requests' });
-                window.dispatchEvent(event);
-              }}
-              variant="outline"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Request Custom Automation
-            </Button>
-          </div>
-        )}
+          )}
+          <Button 
+            onClick={() => {
+              const event = new CustomEvent('setActiveTab', { detail: 'custom-requests' });
+              window.dispatchEvent(event);
+            }}
+            variant="outline"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Request Custom Automation
+          </Button>
+        </div>
       </div>
 
       {/* Stats Overview */}
