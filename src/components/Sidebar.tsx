@@ -91,17 +91,6 @@ export function Sidebar({ activeTab, onTabChange, isCollapsed, onToggleCollapse 
         </div>
       </div>
 
-      {!isCollapsed && (
-        <div className="p-4 border-b border-border">
-          <div className="bg-success/10 border border-success/20 rounded-lg p-3">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="bg-success text-success-foreground">Active</Badge>
-            </div>
-            <p className="text-sm font-medium mt-2">Confirmation Service</p>
-            <p className="text-xs text-muted-foreground">Ready to handle client meetings</p>
-          </div>
-        </div>
-      )}
 
       <nav className="p-2">
         {navigationItems.map((item) => (
