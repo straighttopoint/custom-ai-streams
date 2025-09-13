@@ -22,7 +22,8 @@ interface AutomationCardProps {
   tags: string[];
   isActive: boolean;
   isInUserList?: boolean;
-  onListChange?: () => void;
+  onAutomationAdded?: (automationId: string) => void;
+  onAutomationRemoved?: (automationId: string) => void;
 }
 
 export function AutomationCard({
@@ -39,7 +40,8 @@ export function AutomationCard({
   tags,
   isActive,
   isInUserList = false,
-  onListChange
+  onAutomationAdded,
+  onAutomationRemoved
 }: AutomationCardProps) {
   const { user } = useAuth();
   const [isAdding, setIsAdding] = useState(false);
@@ -81,8 +83,9 @@ export function AutomationCard({
           throw error;
         }
       } else {
+        // Optimistically update the UI immediately
+        onAutomationAdded?.(id);
         toast.success(`${title} added to your automation list!`);
-        onListChange?.();
       }
     } catch (error) {
       console.error('Error adding automation:', error);
@@ -105,8 +108,9 @@ export function AutomationCard({
 
       if (error) throw error;
 
+      // Optimistically update the UI immediately
+      onAutomationRemoved?.(id);
       toast.success(`${title} removed from your automation list`);
-      onListChange?.();
     } catch (error) {
       console.error('Error removing automation:', error);
       toast.error("Failed to remove automation from your list");

@@ -117,6 +117,14 @@ export function Marketplace() {
     }
   };
 
+  const handleAutomationAdded = (automationId: string) => {
+    setUserAutomations(prev => [...prev, automationId]);
+  };
+
+  const handleAutomationRemoved = (automationId: string) => {
+    setUserAutomations(prev => prev.filter(id => id !== automationId));
+  };
+
   // Calculate real category counts
   const categoryStats = useMemo(() => {
     const stats: Record<string, number> = {
@@ -198,7 +206,8 @@ export function Marketplace() {
             key={automation.id} 
             {...automation} 
             isInUserList={userAutomations.includes(automation.id)}
-            onListChange={fetchUserAutomations}
+            onAutomationAdded={handleAutomationAdded}
+            onAutomationRemoved={handleAutomationRemoved}
           />
         ))}
       </div>
