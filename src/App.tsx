@@ -16,6 +16,8 @@ import "./App.css"
 
 const App = () => (
   <>
+      <Toaster />
+      <Sonner />
       <AuthProvider>
         <BrowserRouter>
           <Routes>
