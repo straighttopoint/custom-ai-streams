@@ -99,21 +99,29 @@ export function AutomationList() {
             Manage your automation portfolio. Configure, activate, and monitor your AI automations.
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => navigate('/dashboard')} variant="outline">
-            Browse Marketplace
-          </Button>
-          <Button 
-            onClick={() => {
-              const event = new CustomEvent('setActiveTab', { detail: 'custom-requests' });
-              window.dispatchEvent(event);
-            }}
-            variant="outline"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Request Custom Automation
-          </Button>
-        </div>
+        {automations.length > 0 && (
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => {
+                const event = new CustomEvent('setActiveTab', { detail: 'marketplace' });
+                window.dispatchEvent(event);
+              }} 
+              variant="outline"
+            >
+              Browse Marketplace
+            </Button>
+            <Button 
+              onClick={() => {
+                const event = new CustomEvent('setActiveTab', { detail: 'custom-requests' });
+                window.dispatchEvent(event);
+              }}
+              variant="outline"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Request Custom Automation
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Stats Overview */}
@@ -155,7 +163,12 @@ export function AutomationList() {
             <p className="text-muted-foreground mb-4">
               Start building your automation portfolio by adding automations from the marketplace.
             </p>
-            <Button onClick={() => navigate('/dashboard')}>
+            <Button 
+              onClick={() => {
+                const event = new CustomEvent('setActiveTab', { detail: 'marketplace' });
+                window.dispatchEvent(event);
+              }}
+            >
               Browse Marketplace
             </Button>
           </CardContent>
