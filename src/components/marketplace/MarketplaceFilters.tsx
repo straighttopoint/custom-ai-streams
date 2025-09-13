@@ -1,10 +1,13 @@
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Search, Filter, SlidersHorizontal } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Search, Filter, SlidersHorizontal, X } from "lucide-react";
 
 interface MarketplaceFiltersProps {
   activeCategory: string;
@@ -26,6 +29,24 @@ const categories = [
   { id: "crm-automation", label: "CRM Automation", count: 7 },
 ];
 
+const searchSuggestions = [
+  "Social Media Automation",
+  "Content Calendar",
+  "Lead Generation",
+  "Email Sequences", 
+  "CRM Integration",
+  "Instagram Posting",
+  "LinkedIn Automation",
+  "Blog Content",
+  "SEO Optimization",
+  "Customer Support",
+  "Chatbot",
+  "Financial Reporting",
+  "KPI Tracking",
+  "A/B Testing",
+  "Segmentation"
+];
+
 export function MarketplaceFilters({
   activeCategory,
   onCategoryChange,
@@ -36,18 +57,82 @@ export function MarketplaceFilters({
   showAvailableOnly,
   onAvailableOnlyChange
 }: MarketplaceFiltersProps) {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (searchQuery.length > 0) {
+      const filtered = searchSuggestions.filter(suggestion =>
+        suggestion.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredSuggestions(filtered);
+      setIsSearchOpen(filtered.length > 0);
+    } else {
+      setFilteredSuggestions([]);
+      setIsSearchOpen(false);
+    }
+  }, [searchQuery]);
   return (
     <div className="space-y-6">
       {/* Search and Sort Row */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Search automations..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10"
-          />
+          <Popover open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+            <PopoverTrigger asChild>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Search automations..."
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  className="pl-10 pr-8"
+                  onFocus={() => {
+                    if (filteredSuggestions.length > 0) {
+                      setIsSearchOpen(true);
+                    }
+                  }}
+                />
+                {searchQuery && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                    onClick={() => {
+                      onSearchChange("");
+                      setIsSearchOpen(false);
+                    }}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0" align="start">
+              <Command>
+                <CommandList>
+                  {filteredSuggestions.length > 0 ? (
+                    <CommandGroup heading="Suggestions">
+                      {filteredSuggestions.slice(0, 6).map((suggestion) => (
+                        <CommandItem
+                          key={suggestion}
+                          onSelect={() => {
+                            onSearchChange(suggestion);
+                            setIsSearchOpen(false);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <Search className="mr-2 h-4 w-4" />
+                          {suggestion}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  ) : (
+                    <CommandEmpty>No suggestions found.</CommandEmpty>
+                  )}
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
         
         <Select value={sortBy} onValueChange={onSortChange}>
