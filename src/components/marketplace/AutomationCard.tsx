@@ -1,8 +1,12 @@
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Star, Bot, Plus, Eye, TrendingUp } from "lucide-react";
+import { Star, Bot, Plus, Eye, TrendingUp, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 interface AutomationCardProps {
   id: string;
@@ -34,7 +38,53 @@ export function AutomationCard({
   isActive
 }: AutomationCardProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isAdding, setIsAdding] = useState(false);
+  const [isAdded, setIsAdded] = useState(false);
   const profitMargin = ((profit / suggestedPrice) * 100).toFixed(1);
+
+  const handleAddToList = async () => {
+    if (!user) {
+      toast.error("Please log in to add automations to your list");
+      return;
+    }
+
+    setIsAdding(true);
+    try {
+      const { error } = await supabase
+        .from('user_automations')
+        .insert({
+          user_id: user.id,
+          automation_id: id,
+          automation_title: title,
+          automation_description: description,
+          automation_category: category,
+          automation_cost: cost,
+          automation_suggested_price: suggestedPrice,
+          automation_profit: profit,
+          automation_rating: rating,
+          automation_reviews: reviews,
+          automation_tags: tags,
+          is_active: isActive
+        });
+
+      if (error) {
+        if (error.code === '23505') {
+          toast.error("This automation is already in your list");
+        } else {
+          throw error;
+        }
+      } else {
+        setIsAdded(true);
+        toast.success(`${title} added to your automation list!`);
+      }
+    } catch (error) {
+      console.error('Error adding automation:', error);
+      toast.error("Failed to add automation to your list");
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-200 border-border">
@@ -121,9 +171,28 @@ export function AutomationCard({
           <Eye className="w-4 h-4 mr-2" />
           Preview
         </Button>
-        <Button size="sm" className="flex-1 bg-primary hover:bg-primary/90">
-          <Plus className="w-4 h-4 mr-2" />
-          Add to List
+        <Button 
+          size="sm" 
+          className="flex-1 bg-primary hover:bg-primary/90"
+          onClick={handleAddToList}
+          disabled={isAdding || isAdded}
+        >
+          {isAdding ? (
+            <>
+              <Plus className="w-4 h-4 mr-2 animate-spin" />
+              Adding...
+            </>
+          ) : isAdded ? (
+            <>
+              <Check className="w-4 h-4 mr-2" />
+              Added
+            </>
+          ) : (
+            <>
+              <Plus className="w-4 h-4 mr-2" />
+              Add to List
+            </>
+          )}
         </Button>
       </CardFooter>
     </Card>

@@ -211,6 +211,60 @@ export type Database = {
         }
         Relationships: []
       }
+      user_automations: {
+        Row: {
+          added_at: string
+          automation_category: string | null
+          automation_cost: number
+          automation_description: string | null
+          automation_id: string
+          automation_profit: number
+          automation_rating: number | null
+          automation_reviews: number | null
+          automation_suggested_price: number
+          automation_tags: string[] | null
+          automation_title: string
+          id: string
+          is_active: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          automation_category?: string | null
+          automation_cost?: number
+          automation_description?: string | null
+          automation_id: string
+          automation_profit?: number
+          automation_rating?: number | null
+          automation_reviews?: number | null
+          automation_suggested_price?: number
+          automation_tags?: string[] | null
+          automation_title: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          automation_category?: string | null
+          automation_cost?: number
+          automation_description?: string | null
+          automation_id?: string
+          automation_profit?: number
+          automation_rating?: number | null
+          automation_reviews?: number | null
+          automation_suggested_price?: number
+          automation_tags?: string[] | null
+          automation_title?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       wallets: {
         Row: {
           available_for_withdrawal: number
