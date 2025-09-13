@@ -16,15 +16,17 @@ interface MarketplaceFiltersProps {
   onSortChange: (sort: string) => void;
   showAvailableOnly: boolean;
   onAvailableOnlyChange: (show: boolean) => void;
+  categoryStats: Record<string, number>;
 }
 
 const categories = [
-  { id: "all", label: "All Categories", count: 48 },
-  { id: "social-media", label: "Social Media Management", count: 12 },
-  { id: "content-generation", label: "Content Generation", count: 15 },
-  { id: "lead-generation", label: "Lead Generation", count: 8 },
-  { id: "email-marketing", label: "Email Marketing", count: 6 },
-  { id: "crm-automation", label: "CRM Automation", count: 7 },
+  { id: "all", label: "All Categories" },
+  { id: "social-media-management", label: "Social Media Management" },
+  { id: "content-generation", label: "Content Generation" },
+  { id: "lead-generation", label: "Lead Generation" },
+  { id: "email-marketing", label: "Email Marketing" },
+  { id: "customer-support", label: "Customer Support" },
+  { id: "financial-management", label: "Financial Management" },
 ];
 
 const searchSuggestions = [
@@ -53,7 +55,8 @@ export function MarketplaceFilters({
   sortBy,
   onSortChange,
   showAvailableOnly,
-  onAvailableOnlyChange
+  onAvailableOnlyChange,
+  categoryStats
 }: MarketplaceFiltersProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
@@ -137,6 +140,17 @@ export function MarketplaceFilters({
           </SelectContent>
         </Select>
 
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="available-only"
+            checked={showAvailableOnly}
+            onCheckedChange={onAvailableOnlyChange}
+          />
+          <Label htmlFor="available-only" className="text-sm whitespace-nowrap">
+            Available only
+          </Label>
+        </div>
+
         <Button variant="outline">
           <SlidersHorizontal className="w-4 h-4 mr-2" />
           Filters
@@ -157,24 +171,10 @@ export function MarketplaceFilters({
             >
               {category.label}
               <Badge variant="secondary" className="ml-2 text-xs">
-                {category.count}
+                {categoryStats[category.id] || 0}
               </Badge>
             </Button>
           ))}
-        </div>
-      </div>
-
-      {/* Quick Filters */}
-      <div className="flex items-center gap-6">
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="available-only"
-            checked={showAvailableOnly}
-            onCheckedChange={onAvailableOnlyChange}
-          />
-          <Label htmlFor="available-only" className="text-sm">
-            Show only available automations
-          </Label>
         </div>
       </div>
     </div>

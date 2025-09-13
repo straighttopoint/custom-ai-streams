@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AutomationCard } from "./AutomationCard";
 import { MarketplaceFilters } from "./MarketplaceFilters";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Star, DollarSign, TrendingUp, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // Mock data for automations
 const mockAutomations = [
@@ -85,10 +90,33 @@ const mockAutomations = [
 ];
 
 export function Marketplace() {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [showAvailableOnly, setShowAvailableOnly] = useState(false);
+
+  // Calculate real category counts
+  const categoryStats = useMemo(() => {
+    const stats: Record<string, number> = {
+      "all": mockAutomations.length,
+      "social-media-management": 0,
+      "content-generation": 0,
+      "lead-generation": 0,
+      "email-marketing": 0,
+      "customer-support": 0,
+      "financial-management": 0
+    };
+
+    mockAutomations.forEach(automation => {
+      const categoryKey = automation.category.toLowerCase().replace(/\s+/g, "-");
+      if (stats[categoryKey] !== undefined) {
+        stats[categoryKey]++;
+      }
+    });
+
+    return stats;
+  }, []);
 
   const filteredAutomations = mockAutomations.filter((automation) => {
     const matchesCategory = activeCategory === "all" || 
@@ -120,6 +148,14 @@ export function Marketplace() {
     }
   });
 
+  const getStatusBadge = (isActive: boolean) => {
+    return isActive ? (
+      <Badge variant="default" className="bg-success text-success-foreground">Available</Badge>
+    ) : (
+      <Badge variant="secondary">Unavailable</Badge>
+    );
+  };
+
   return (
     <div className="space-y-6 overflow-auto">
       <div>
@@ -139,12 +175,91 @@ export function Marketplace() {
         onSortChange={setSortBy}
         showAvailableOnly={showAvailableOnly}
         onAvailableOnlyChange={setShowAvailableOnly}
+        categoryStats={categoryStats}
       />
 
-      <div className="grid gap-6">
-        {sortedAutomations.map((automation) => (
-          <AutomationCard key={automation.id} {...automation} />
-        ))}
+      <div className="bg-card border border-border rounded-lg">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[300px]">Automation</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Rating</TableHead>
+              <TableHead>Cost</TableHead>
+              <TableHead>Suggested Price</TableHead>
+              <TableHead>Profit</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {sortedAutomations.map((automation) => (
+              <TableRow key={automation.id}>
+                <TableCell>
+                  <div className="space-y-1">
+                    <div className="font-medium">{automation.title}</div>
+                    <div className="text-sm text-muted-foreground line-clamp-2">
+                      {automation.description}
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {automation.tags.slice(0, 3).map((tag) => (
+                        <Badge key={tag} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                      {automation.tags.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{automation.tags.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="secondary">{automation.category}</Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span className="font-medium">{automation.rating}</span>
+                    <span className="text-sm text-muted-foreground">({automation.reviews})</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1 text-destructive">
+                    <DollarSign className="h-4 w-4" />
+                    <span>${automation.cost}</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <DollarSign className="h-4 w-4" />
+                    <span>${automation.suggestedPrice}</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1 text-success font-medium">
+                    <TrendingUp className="h-4 w-4" />
+                    <span>${automation.profit}</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  {getStatusBadge(automation.isActive)}
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate(`/automation/${automation.id}`)}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Details
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
 
       {sortedAutomations.length === 0 && (
