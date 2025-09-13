@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Star, Bot, Plus, Eye, TrendingUp, Check } from "lucide-react";
+import { Star, Bot, Plus, Eye, TrendingUp, Check, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,6 +21,8 @@ interface AutomationCardProps {
   image?: string;
   tags: string[];
   isActive: boolean;
+  isInUserList?: boolean;
+  onListChange?: () => void;
 }
 
 export function AutomationCard({
@@ -35,13 +37,17 @@ export function AutomationCard({
   profit,
   image,
   tags,
-  isActive
+  isActive,
+  isInUserList = false,
+  onListChange
 }: AutomationCardProps) {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [isAdding, setIsAdding] = useState(false);
-  const [isAdded, setIsAdded] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const profitMargin = ((profit / suggestedPrice) * 100).toFixed(1);
+
+  const navigate = useNavigate();
 
   const handleAddToList = async () => {
     if (!user) {
@@ -75,14 +81,37 @@ export function AutomationCard({
           throw error;
         }
       } else {
-        setIsAdded(true);
         toast.success(`${title} added to your automation list!`);
+        onListChange?.();
       }
     } catch (error) {
       console.error('Error adding automation:', error);
       toast.error("Failed to add automation to your list");
     } finally {
       setIsAdding(false);
+    }
+  };
+
+  const handleRemoveFromList = async () => {
+    if (!user) return;
+
+    setIsRemoving(true);
+    try {
+      const { error } = await supabase
+        .from('user_automations')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('automation_id', id);
+
+      if (error) throw error;
+
+      toast.success(`${title} removed from your automation list`);
+      onListChange?.();
+    } catch (error) {
+      console.error('Error removing automation:', error);
+      toast.error("Failed to remove automation from your list");
+    } finally {
+      setIsRemoving(false);
     }
   };
 
@@ -173,20 +202,40 @@ export function AutomationCard({
         </Button>
         <Button 
           size="sm" 
-          className="flex-1 bg-primary hover:bg-primary/90"
-          onClick={handleAddToList}
-          disabled={isAdding || isAdded}
+          className={`flex-1 transition-all duration-200 ${
+            isInUserList 
+              ? isHovered 
+                ? "bg-destructive hover:bg-destructive text-destructive-foreground" 
+                : "bg-success hover:bg-success text-success-foreground"
+              : "bg-primary hover:bg-primary/90"
+          }`}
+          onClick={isInUserList ? handleRemoveFromList : handleAddToList}
+          disabled={isAdding || isRemoving}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
         >
           {isAdding ? (
             <>
               <Plus className="w-4 h-4 mr-2 animate-spin" />
               Adding...
             </>
-          ) : isAdded ? (
+          ) : isRemoving ? (
             <>
-              <Check className="w-4 h-4 mr-2" />
-              Added
+              <Trash2 className="w-4 h-4 mr-2 animate-spin" />
+              Removing...
             </>
+          ) : isInUserList ? (
+            isHovered ? (
+              <>
+                <Trash2 className="w-4 h-4 mr-2" />
+                Remove from Your List
+              </>
+            ) : (
+              <>
+                <Check className="w-4 h-4 mr-2" />
+                In Your List
+              </>
+            )
           ) : (
             <>
               <Plus className="w-4 h-4 mr-2" />

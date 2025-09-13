@@ -1,6 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { AutomationCard } from "./AutomationCard";
 import { MarketplaceFilters } from "./MarketplaceFilters";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -87,10 +89,33 @@ const mockAutomations = [
 ];
 
 export function Marketplace() {
+  const { user } = useAuth();
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [showAvailableOnly, setShowAvailableOnly] = useState(false);
+  const [userAutomations, setUserAutomations] = useState<string[]>([]);
+
+  // Fetch user's automations to check what's already in their list
+  useEffect(() => {
+    if (user) {
+      fetchUserAutomations();
+    }
+  }, [user]);
+
+  const fetchUserAutomations = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_automations')
+        .select('automation_id')
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+      setUserAutomations(data?.map(item => item.automation_id) || []);
+    } catch (error) {
+      console.error('Error fetching user automations:', error);
+    }
+  };
 
   // Calculate real category counts
   const categoryStats = useMemo(() => {
@@ -169,7 +194,12 @@ export function Marketplace() {
 
       <div className="grid gap-6">
         {sortedAutomations.map((automation) => (
-          <AutomationCard key={automation.id} {...automation} />
+          <AutomationCard 
+            key={automation.id} 
+            {...automation} 
+            isInUserList={userAutomations.includes(automation.id)}
+            onListChange={fetchUserAutomations}
+          />
         ))}
       </div>
 
