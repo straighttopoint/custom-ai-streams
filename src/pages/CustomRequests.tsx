@@ -7,8 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Clock, CheckCircle, XCircle, Eye, Trash2, FileText } from "lucide-react";
+import { Plus, Clock, CheckCircle, XCircle, Eye, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -92,23 +91,6 @@ export default function CustomRequests() {
     } catch (error) {
       console.error('Error creating request:', error);
       toast.error("Failed to create request");
-    }
-  };
-
-  const handleDeleteRequest = async (requestId: string) => {
-    try {
-      const { error } = await supabase
-        .from('custom_requests')
-        .delete()
-        .eq('id', requestId);
-
-      if (error) throw error;
-
-      toast.success("Request deleted successfully");
-      fetchRequests();
-    } catch (error) {
-      console.error('Error deleting request:', error);
-      toast.error("Failed to delete request");
     }
   };
 
@@ -338,29 +320,6 @@ export default function CustomRequests() {
                         </div>
                       </DialogContent>
                     </Dialog>
-                    
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Request</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete this custom request? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDeleteRequest(request.id)}>
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
                   </div>
                 </div>
               </CardHeader>
