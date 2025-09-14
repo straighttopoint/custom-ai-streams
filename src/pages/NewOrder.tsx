@@ -39,13 +39,138 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-// Mock automation data - in real app this would come from user's saved automations
-const mockAutomations = [
-  { id: "1", title: "Instagram Growth Bot", price: "$199", category: "Social Media" },
-  { id: "2", title: "Lead Generation System", price: "$299", category: "Sales" },
-  { id: "3", title: "Customer Support Bot", price: "$149", category: "Support" },
-  { id: "4", title: "Email Marketing Automation", price: "$179", category: "Marketing" },
-  { id: "5", title: "Content Scheduler Pro", price: "$129", category: "Content" },
+// All available automations from marketplace
+const allAutomations = [
+  {
+    id: "1",
+    title: "Social Media Content Calendar",
+    description: "Automatically generate and schedule social media posts across multiple platforms with AI-generated content and optimal timing.",
+    category: "Social Media Management",
+    rating: 4.8,
+    reviews: 124,
+    cost: 150,
+    suggestedPrice: 500,
+    profit: 350,
+    tags: ["Instagram", "LinkedIn", "Twitter", "AI Content"],
+    isActive: true,
+  },
+  {
+    id: "2",
+    title: "Lead Qualification System",
+    description: "Intelligent lead scoring and qualification automation that routes qualified prospects directly to your CRM with enriched data.",
+    category: "Lead Generation",
+    rating: 4.9,
+    reviews: 89,
+    cost: 200,
+    suggestedPrice: 800,
+    profit: 600,
+    tags: ["CRM", "Lead Scoring", "Email Automation"],
+    isActive: true,
+  },
+  {
+    id: "3",
+    title: "Content Generation Pipeline",
+    description: "End-to-end content creation workflow from research to publication, including blog posts, social media, and newsletters.",
+    category: "Content Generation",
+    rating: 4.7,
+    reviews: 156,
+    cost: 180,
+    suggestedPrice: 650,
+    profit: 470,
+    tags: ["Blog Posts", "SEO", "Newsletter", "Research"],
+    isActive: true,
+  },
+  {
+    id: "4",
+    title: "Customer Support Bot",
+    description: "24/7 intelligent customer support automation with natural language processing and escalation workflows.",
+    category: "Customer Support",
+    rating: 4.6,
+    reviews: 203,
+    cost: 120,
+    suggestedPrice: 450,
+    profit: 330,
+    tags: ["Chatbot", "NLP", "Support Tickets"],
+    isActive: true,
+  },
+  {
+    id: "5",
+    title: "Email Marketing Automation",
+    description: "Sophisticated email campaigns with behavioral triggers, A/B testing, and performance optimization.",
+    category: "Email Marketing",
+    rating: 4.8,
+    reviews: 167,
+    cost: 100,
+    suggestedPrice: 400,
+    profit: 300,
+    tags: ["Email Campaigns", "A/B Testing", "Analytics"],
+    isActive: true,
+  },
+  {
+    id: "6",
+    title: "E-commerce Order Processing",
+    description: "Complete order fulfillment automation from payment processing to inventory management and shipping notifications.",
+    category: "E-commerce",
+    rating: 4.9,
+    reviews: 134,
+    cost: 250,
+    suggestedPrice: 900,
+    profit: 650,
+    tags: ["Payment Processing", "Inventory", "Shipping"],
+    isActive: true,
+  },
+  {
+    id: "7",
+    title: "Data Analytics Dashboard",
+    description: "Automated data collection, processing, and visualization with real-time reporting and insights generation.",
+    category: "Analytics",
+    rating: 4.7,
+    reviews: 98,
+    cost: 200,
+    suggestedPrice: 750,
+    profit: 550,
+    tags: ["Data Visualization", "Real-time", "Reporting"],
+    isActive: true,
+  },
+  {
+    id: "8",
+    title: "Appointment Scheduling System",
+    description: "Smart booking automation with calendar integration, reminder notifications, and rescheduling capabilities.",
+    category: "Scheduling",
+    rating: 4.5,
+    reviews: 145,
+    cost: 80,
+    suggestedPrice: 350,
+    profit: 270,
+    tags: ["Calendar", "Booking", "Notifications"],
+    isActive: true,
+  },
+  {
+    id: "9",
+    title: "Inventory Management System",
+    description: "Automated stock tracking, reorder alerts, and supplier communication with demand forecasting.",
+    category: "Inventory",
+    rating: 4.6,
+    reviews: 112,
+    cost: 180,
+    suggestedPrice: 600,
+    profit: 420,
+    tags: ["Stock Tracking", "Forecasting", "Suppliers"],
+    isActive: true,
+  },
+  {
+    id: "10",
+    title: "Financial Reporting Automation",
+    description: "Comprehensive financial analysis and reporting with automated data collection from multiple sources.",
+    category: "Finance",
+    rating: 4.8,
+    reviews: 87,
+    cost: 220,
+    suggestedPrice: 850,
+    profit: 630,
+    tags: ["Financial Analysis", "Reporting", "Multi-source"],
+    isActive: true,
+  },
 ];
 
 export default function NewOrder() {
@@ -85,7 +210,7 @@ export default function NewOrder() {
     
     try {
       // Get automation details
-      const selectedAutomation = mockAutomations.find(auto => auto.id === data.automationId);
+      const selectedAutomation = allAutomations.find(auto => auto.id === data.automationId);
       
       // Create order in database
       const { error } = await supabase
@@ -104,7 +229,7 @@ export default function NewOrder() {
           linkedin_profile: data.linkedinProfile || null,
           automation_id: data.automationId,
           automation_title: selectedAutomation?.title || 'Unknown Automation',
-          automation_price: selectedAutomation?.price || data.customPrice,
+          automation_price: `$${selectedAutomation?.suggestedPrice || 0}`,
           automation_category: selectedAutomation?.category || null,
           project_description: data.projectDescription,
           special_requirements: data.specialRequirements || null,
@@ -132,7 +257,7 @@ export default function NewOrder() {
     }
   };
 
-  const selectedAutomation = mockAutomations.find(
+  const selectedAutomation = allAutomations.find(
     automation => automation.id === form.watch("automationId")
   );
 
@@ -334,13 +459,13 @@ export default function NewOrder() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {mockAutomations.map((automation) => (
+                        {allAutomations.map((automation) => (
                           <SelectItem key={automation.id} value={automation.id}>
                             <div className="flex items-center justify-between w-full">
                               <span>{automation.title}</span>
                               <div className="flex items-center gap-2 ml-4">
                                 <Badge variant="secondary">{automation.category}</Badge>
-                                <span className="font-semibold text-primary">{automation.price}</span>
+                                <span className="font-semibold text-primary">${automation.suggestedPrice}</span>
                               </div>
                             </div>
                           </SelectItem>
@@ -360,7 +485,7 @@ export default function NewOrder() {
                       <p className="font-medium">{selectedAutomation.title}</p>
                       <Badge variant="secondary">{selectedAutomation.category}</Badge>
                     </div>
-                    <span className="text-lg font-bold text-primary">{selectedAutomation.price}</span>
+                    <span className="text-lg font-bold text-primary">${selectedAutomation.suggestedPrice}</span>
                   </div>
                 </div>
               )}
