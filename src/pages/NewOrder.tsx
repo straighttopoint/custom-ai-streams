@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -39,142 +39,10 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-// All available automations from marketplace
-const allAutomations = [
-  {
-    id: "1",
-    title: "Social Media Content Calendar",
-    description: "Automatically generate and schedule social media posts across multiple platforms with AI-generated content and optimal timing.",
-    category: "Social Media Management",
-    rating: 4.8,
-    reviews: 124,
-    cost: 150,
-    suggestedPrice: 500,
-    profit: 350,
-    tags: ["Instagram", "LinkedIn", "Twitter", "AI Content"],
-    isActive: true,
-  },
-  {
-    id: "2",
-    title: "Lead Qualification System",
-    description: "Intelligent lead scoring and qualification automation that routes qualified prospects directly to your CRM with enriched data.",
-    category: "Lead Generation",
-    rating: 4.9,
-    reviews: 89,
-    cost: 200,
-    suggestedPrice: 800,
-    profit: 600,
-    tags: ["CRM", "Lead Scoring", "Email Automation"],
-    isActive: true,
-  },
-  {
-    id: "3",
-    title: "Content Generation Pipeline",
-    description: "End-to-end content creation workflow from research to publication, including blog posts, social media, and newsletters.",
-    category: "Content Generation",
-    rating: 4.7,
-    reviews: 156,
-    cost: 180,
-    suggestedPrice: 650,
-    profit: 470,
-    tags: ["Blog Posts", "SEO", "Newsletter", "Research"],
-    isActive: true,
-  },
-  {
-    id: "4",
-    title: "Customer Support Bot",
-    description: "24/7 intelligent customer support automation with natural language processing and escalation workflows.",
-    category: "Customer Support",
-    rating: 4.6,
-    reviews: 203,
-    cost: 120,
-    suggestedPrice: 450,
-    profit: 330,
-    tags: ["Chatbot", "NLP", "Support Tickets"],
-    isActive: true,
-  },
-  {
-    id: "5",
-    title: "Email Marketing Automation",
-    description: "Sophisticated email campaigns with behavioral triggers, A/B testing, and performance optimization.",
-    category: "Email Marketing",
-    rating: 4.8,
-    reviews: 167,
-    cost: 100,
-    suggestedPrice: 400,
-    profit: 300,
-    tags: ["Email Campaigns", "A/B Testing", "Analytics"],
-    isActive: true,
-  },
-  {
-    id: "6",
-    title: "E-commerce Order Processing",
-    description: "Complete order fulfillment automation from payment processing to inventory management and shipping notifications.",
-    category: "E-commerce",
-    rating: 4.9,
-    reviews: 134,
-    cost: 250,
-    suggestedPrice: 900,
-    profit: 650,
-    tags: ["Payment Processing", "Inventory", "Shipping"],
-    isActive: true,
-  },
-  {
-    id: "7",
-    title: "Data Analytics Dashboard",
-    description: "Automated data collection, processing, and visualization with real-time reporting and insights generation.",
-    category: "Analytics",
-    rating: 4.7,
-    reviews: 98,
-    cost: 200,
-    suggestedPrice: 750,
-    profit: 550,
-    tags: ["Data Visualization", "Real-time", "Reporting"],
-    isActive: true,
-  },
-  {
-    id: "8",
-    title: "Appointment Scheduling System",
-    description: "Smart booking automation with calendar integration, reminder notifications, and rescheduling capabilities.",
-    category: "Scheduling",
-    rating: 4.5,
-    reviews: 145,
-    cost: 80,
-    suggestedPrice: 350,
-    profit: 270,
-    tags: ["Calendar", "Booking", "Notifications"],
-    isActive: true,
-  },
-  {
-    id: "9",
-    title: "Inventory Management System",
-    description: "Automated stock tracking, reorder alerts, and supplier communication with demand forecasting.",
-    category: "Inventory",
-    rating: 4.6,
-    reviews: 112,
-    cost: 180,
-    suggestedPrice: 600,
-    profit: 420,
-    tags: ["Stock Tracking", "Forecasting", "Suppliers"],
-    isActive: true,
-  },
-  {
-    id: "10",
-    title: "Financial Reporting Automation",
-    description: "Comprehensive financial analysis and reporting with automated data collection from multiple sources.",
-    category: "Finance",
-    rating: 4.8,
-    reviews: 87,
-    cost: 220,
-    suggestedPrice: 850,
-    profit: 630,
-    tags: ["Financial Analysis", "Reporting", "Multi-source"],
-    isActive: true,
-  },
-];
-
 export default function NewOrder() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userAutomations, setUserAutomations] = useState<any[]>([]);
+  const [loadingAutomations, setLoadingAutomations] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -200,6 +68,34 @@ export default function NewOrder() {
     },
   });
 
+  // Fetch user's automation list
+  const fetchUserAutomations = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('user_automations')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_active', true);
+
+      if (error) {
+        throw error;
+      }
+
+      setUserAutomations(data || []);
+    } catch (error) {
+      console.error('Error fetching user automations:', error);
+      toast.error("Failed to load your automations");
+    } finally {
+      setLoadingAutomations(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserAutomations();
+  }, [user]);
+
   const onSubmit = async (data: FormData) => {
     if (!user) {
       toast.error("You must be logged in to create an order");
@@ -210,7 +106,7 @@ export default function NewOrder() {
     
     try {
       // Get automation details
-      const selectedAutomation = allAutomations.find(auto => auto.id === data.automationId);
+      const selectedAutomation = userAutomations.find(auto => auto.automation_id === data.automationId);
       
       // Create order in database
       const { error } = await supabase
@@ -228,9 +124,9 @@ export default function NewOrder() {
           twitter_handle: data.twitterHandle || null,
           linkedin_profile: data.linkedinProfile || null,
           automation_id: data.automationId,
-          automation_title: selectedAutomation?.title || 'Unknown Automation',
-          automation_price: `$${selectedAutomation?.suggestedPrice || 0}`,
-          automation_category: selectedAutomation?.category || null,
+          automation_title: selectedAutomation?.automation_title || 'Unknown Automation',
+          automation_price: `$${selectedAutomation?.automation_suggested_price || 0}`,
+          automation_category: selectedAutomation?.automation_category || null,
           project_description: data.projectDescription,
           special_requirements: data.specialRequirements || null,
           meeting_date: data.meetingDate,
@@ -247,7 +143,7 @@ export default function NewOrder() {
       
       // Navigate back to dashboard with orders tab active
       navigate('/dashboard');
-      window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'orders' }));
+      window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'active-orders' }));
       
     } catch (error) {
       console.error('Error creating order:', error);
@@ -257,14 +153,36 @@ export default function NewOrder() {
     }
   };
 
-  const selectedAutomation = allAutomations.find(
-    automation => automation.id === form.watch("automationId")
+  const selectedAutomation = userAutomations.find(
+    automation => automation.automation_id === form.watch("automationId")
   );
 
-  return (
+  if (loadingAutomations) {
+    return <div className="text-center py-8">Loading your automations...</div>;
+  }
 
+  if (userAutomations.length === 0) {
+    return (
       <div className="max-w-4xl mx-auto space-y-8 py-8">
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-4">
+          <h1 className="text-3xl font-bold">No Automations Available</h1>
+          <p className="text-muted-foreground">
+            You need to add automations to your list before creating orders.
+          </p>
+          <Button onClick={() => {
+            navigate('/dashboard');
+            window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'marketplace' }));
+          }}>
+            Browse Marketplace
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-8 py-8">
+      <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold">New Order Request</h1>
         <p className="text-muted-foreground">
           Fill out this form to submit a new automation order for your client
@@ -419,8 +337,6 @@ export default function NewOrder() {
                 )}
               />
 
-          
-
               <FormField
                 control={form.control}
                 name="linkedinProfile"
@@ -459,13 +375,13 @@ export default function NewOrder() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {allAutomations.map((automation) => (
-                          <SelectItem key={automation.id} value={automation.id}>
+                        {userAutomations.map((automation) => (
+                          <SelectItem key={automation.automation_id} value={automation.automation_id}>
                             <div className="flex items-center justify-between w-full">
-                              <span>{automation.title}</span>
+                              <span>{automation.automation_title}</span>
                               <div className="flex items-center gap-2 ml-4">
-                                <Badge variant="secondary">{automation.category}</Badge>
-                                <span className="font-semibold text-primary">${automation.suggestedPrice}</span>
+                                <Badge variant="secondary">{automation.automation_category}</Badge>
+                                <span className="font-semibold text-primary">${automation.automation_suggested_price}</span>
                               </div>
                             </div>
                           </SelectItem>
@@ -482,10 +398,10 @@ export default function NewOrder() {
                   <h4 className="font-semibold mb-2">Selected Automation:</h4>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">{selectedAutomation.title}</p>
-                      <Badge variant="secondary">{selectedAutomation.category}</Badge>
+                      <p className="font-medium">{selectedAutomation.automation_title}</p>
+                      <Badge variant="secondary">{selectedAutomation.automation_category}</Badge>
                     </div>
-                    <span className="text-lg font-bold text-primary">${selectedAutomation.suggestedPrice}</span>
+                    <span className="text-lg font-bold text-primary">${selectedAutomation.automation_suggested_price}</span>
                   </div>
                 </div>
               )}
@@ -624,7 +540,7 @@ export default function NewOrder() {
                       />
                     </FormControl>
                     <p className="text-xs text-muted-foreground">
-                      Enter the price you've agreed with your client (e.g., $299 for fixed or $99/month for recurring)
+                      Enter the final agreed price with your client
                     </p>
                     <FormMessage />
                   </FormItem>
@@ -639,7 +555,8 @@ export default function NewOrder() {
                     <FormLabel>Special Requirements (Optional)</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Any special requirements, deadlines, custom terms, or additional notes..."
+                        placeholder="Any additional requirements, customizations, or notes..."
+                        className="min-h-[100px]"
                         {...field}
                       />
                     </FormControl>
@@ -650,20 +567,20 @@ export default function NewOrder() {
             </CardContent>
           </Card>
 
-          {/* Submit Button */}
-          <div className="flex justify-end pb-8">
-            <Button
-              type="submit"
-              size="lg"
-              disabled={isSubmitting}
-              className="min-w-[200px]"
+          <div className="flex justify-end space-x-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => navigate("/dashboard")}
             >
-              {isSubmitting ? "Submitting Order..." : "Submit Order Request"}
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating Order..." : "Create Order"}
             </Button>
           </div>
         </form>
       </Form>
-      </div>
-
+    </div>
   );
 }
