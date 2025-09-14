@@ -2,6 +2,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -46,6 +50,8 @@ const mockAutomations = [
 
 export default function NewOrder() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -70,17 +76,60 @@ export default function NewOrder() {
   });
 
   const onSubmit = async (data: FormData) => {
+    if (!user) {
+      toast.error("You must be logged in to create an order");
+      return;
+    }
+
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    console.log("New order submitted:", data);
-    
-    // Here you would typically send the data to your backend
-    // and possibly redirect to a success page or show a success message
-    
-    setIsSubmitting(false);
+    try {
+      // Get automation details
+      const selectedAutomation = mockAutomations.find(auto => auto.id === data.automationId);
+      
+      // Create order in database
+      const { error } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          client_name: data.clientName,
+          client_email: data.clientEmail,
+          client_phone: data.clientPhone,
+          company_name: data.companyName,
+          industry: data.industry,
+          website_url: data.websiteUrl || null,
+          instagram_handle: data.instagramHandle || null,
+          facebook_page: data.facebookPage || null,
+          twitter_handle: data.twitterHandle || null,
+          linkedin_profile: data.linkedinProfile || null,
+          automation_id: data.automationId,
+          automation_title: selectedAutomation?.title || 'Unknown Automation',
+          automation_price: selectedAutomation?.price || data.customPrice,
+          automation_category: selectedAutomation?.category || null,
+          project_description: data.projectDescription,
+          special_requirements: data.specialRequirements || null,
+          meeting_date: data.meetingDate,
+          payment_format: data.paymentFormat,
+          agreed_price: data.customPrice,
+          status: 'order_created'
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success("Order created successfully!");
+      
+      // Navigate back to dashboard with orders tab active
+      navigate('/dashboard');
+      window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'orders' }));
+      
+    } catch (error) {
+      console.error('Error creating order:', error);
+      toast.error("Failed to create order. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const selectedAutomation = mockAutomations.find(

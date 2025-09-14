@@ -62,6 +62,96 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          actual_completion_date: string | null
+          admin_notes: string | null
+          agreed_price: string
+          automation_category: string | null
+          automation_id: string
+          automation_price: string
+          automation_title: string
+          client_email: string
+          client_name: string
+          client_phone: string
+          company_name: string
+          created_at: string
+          estimated_completion_date: string | null
+          facebook_page: string | null
+          id: string
+          industry: string
+          instagram_handle: string | null
+          linkedin_profile: string | null
+          meeting_date: string
+          payment_format: string
+          project_description: string
+          special_requirements: string | null
+          status: string
+          twitter_handle: string | null
+          updated_at: string
+          user_id: string
+          website_url: string | null
+        }
+        Insert: {
+          actual_completion_date?: string | null
+          admin_notes?: string | null
+          agreed_price: string
+          automation_category?: string | null
+          automation_id: string
+          automation_price: string
+          automation_title: string
+          client_email: string
+          client_name: string
+          client_phone: string
+          company_name: string
+          created_at?: string
+          estimated_completion_date?: string | null
+          facebook_page?: string | null
+          id?: string
+          industry: string
+          instagram_handle?: string | null
+          linkedin_profile?: string | null
+          meeting_date: string
+          payment_format: string
+          project_description: string
+          special_requirements?: string | null
+          status?: string
+          twitter_handle?: string | null
+          updated_at?: string
+          user_id: string
+          website_url?: string | null
+        }
+        Update: {
+          actual_completion_date?: string | null
+          admin_notes?: string | null
+          agreed_price?: string
+          automation_category?: string | null
+          automation_id?: string
+          automation_price?: string
+          automation_title?: string
+          client_email?: string
+          client_name?: string
+          client_phone?: string
+          company_name?: string
+          created_at?: string
+          estimated_completion_date?: string | null
+          facebook_page?: string | null
+          id?: string
+          industry?: string
+          instagram_handle?: string | null
+          linkedin_profile?: string | null
+          meeting_date?: string
+          payment_format?: string
+          project_description?: string
+          special_requirements?: string | null
+          status?: string
+          twitter_handle?: string | null
+          updated_at?: string
+          user_id?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

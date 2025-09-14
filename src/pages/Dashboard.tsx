@@ -75,7 +75,7 @@ export default function Dashboard() {
         return <AutomationList />;
       case "custom-requests":
         return <CustomRequests />;
-      case "active-orders":
+      case "orders":
         return <ActiveOrders />;
       case "new-order":
         return <NewOrder />;

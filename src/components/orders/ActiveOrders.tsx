@@ -1,5 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, MoreHorizontal } from "lucide-react";
+import { Eye, MoreHorizontal, DollarSign, CheckCircle, Calendar } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,71 +22,42 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface Order {
-  id: string;
-  clientName: string;
-  clientEmail: string;
-  automationType: string;
-  monthlyPrice: number;
-  status: "setup" | "not-setup" | "pending" | "technical-setup";
-  dateCreated: string;
-  nextBilling: string;
-}
-
-const mockOrders: Order[] = [
-  {
-    id: "ORD-001",
-    clientName: "John Smith",
-    clientEmail: "john@company.com",
-    automationType: "Lead Generation Bot",
-    monthlyPrice: 299,
-    status: "setup",
-    dateCreated: "2024-01-15",
-    nextBilling: "2024-02-15",
-  },
-  {
-    id: "ORD-002",
-    clientName: "Sarah Johnson",
-    clientEmail: "sarah@business.com",
-    automationType: "Social Media Scheduler",
-    monthlyPrice: 199,
-    status: "technical-setup",
-    dateCreated: "2024-01-12",
-    nextBilling: "2024-02-12",
-  },
-  {
-    id: "ORD-003",
-    clientName: "Mike Wilson",
-    clientEmail: "mike@startup.io",
-    automationType: "Customer Support Bot",
-    monthlyPrice: 399,
-    status: "pending",
-    dateCreated: "2024-01-10",
-    nextBilling: "2024-02-10",
-  },
-  {
-    id: "ORD-004",
-    clientName: "Emily Brown",
-    clientEmail: "emily@retail.com",
-    automationType: "Email Marketing Automation",
-    monthlyPrice: 249,
-    status: "not-setup",
-    dateCreated: "2024-01-08",
-    nextBilling: "2024-02-08",
-  },
-];
-
-const getStatusBadge = (status: Order["status"]) => {
+const getStatusBadge = (status: string) => {
   const statusConfig = {
-    setup: { label: "Setup Complete", variant: "default" as const, className: "bg-success text-success-foreground" },
-    "not-setup": { label: "Not Setup", variant: "secondary" as const, className: "bg-muted text-muted-foreground" },
-    pending: { label: "Pending", variant: "outline" as const, className: "bg-warning/10 text-warning border-warning" },
-    "technical-setup": { label: "Technical Setup", variant: "outline" as const, className: "bg-primary/10 text-primary border-primary" },
+    'order_created': { variant: 'default' as const, label: 'Order Created' },
+    'request_under_review': { variant: 'secondary' as const, label: 'Under Review' },
+    'request_rejected': { variant: 'destructive' as const, label: 'Request Rejected' },
+    'request_approved': { variant: 'default' as const, label: 'Request Approved' },
+    'meeting_scheduled': { variant: 'secondary' as const, label: 'Meeting Scheduled' },
+    'meeting_completed': { variant: 'default' as const, label: 'Meeting Completed' },
+    'meeting_missed_client': { variant: 'destructive' as const, label: 'Meeting Missed (Client)' },
+    'meeting_missed_our_team': { variant: 'destructive' as const, label: 'Meeting Missed (Our Team)' },
+    'rescheduling_required': { variant: 'secondary' as const, label: 'Rescheduling Required' },
+    'configuration_in_progress': { variant: 'secondary' as const, label: 'Configuration In Progress' },
+    'configuration_blocked': { variant: 'destructive' as const, label: 'Configuration Blocked' },
+    'configuration_completed': { variant: 'default' as const, label: 'Configuration Completed' },
+    'testing_in_progress': { variant: 'secondary' as const, label: 'Testing In Progress' },
+    'testing_failed': { variant: 'destructive' as const, label: 'Testing Failed' },
+    'testing_completed': { variant: 'default' as const, label: 'Testing Completed' },
+    'pending_client_approval': { variant: 'secondary' as const, label: 'Pending Client Approval' },
+    'approved_by_client': { variant: 'default' as const, label: 'Approved by Client' },
+    'rejected_by_client': { variant: 'destructive' as const, label: 'Rejected by Client' },
+    'invoice_sent': { variant: 'secondary' as const, label: 'Invoice Sent' },
+    'payment_pending': { variant: 'secondary' as const, label: 'Payment Pending' },
+    'payment_completed': { variant: 'default' as const, label: 'Payment Completed' },
+    'payment_failed': { variant: 'destructive' as const, label: 'Payment Failed' },
+    'vendor_payment_pending': { variant: 'secondary' as const, label: 'Vendor Payment Pending' },
+    'vendor_payment_completed': { variant: 'default' as const, label: 'Vendor Payment Completed' },
+    'order_completed_successfully': { variant: 'default' as const, label: 'Order Completed Successfully' },
+    'order_cancelled_client': { variant: 'destructive' as const, label: 'Order Cancelled (Client)' },
+    'order_cancelled_internal': { variant: 'destructive' as const, label: 'Order Cancelled (Internal)' },
+    'order_on_hold': { variant: 'secondary' as const, label: 'Order On Hold' },
   };
 
-  const config = statusConfig[status];
+  const config = statusConfig[status as keyof typeof statusConfig] || { variant: 'secondary' as const, label: status };
+  
   return (
-    <Badge variant={config.variant} className={config.className}>
+    <Badge variant={config.variant}>
       {config.label}
     </Badge>
   );
@@ -91,13 +65,44 @@ const getStatusBadge = (status: Order["status"]) => {
 
 export function ActiveOrders() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const handleViewOrder = (orderId: string) => {
     navigate(`/order/${orderId}`);
   };
 
-  const totalRevenue = mockOrders.reduce((sum, order) => sum + order.monthlyPrice, 0);
-  const completedSetups = mockOrders.filter(order => order.status === "setup").length;
+  const fetchOrders = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      setOrders(data || []);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      toast.error("Failed to load orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, [user]);
+
+  if (loading) {
+    return <div className="text-center py-8">Loading orders...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -106,31 +111,53 @@ export function ActiveOrders() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Orders</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{mockOrders.length}</div>
+            <div className="text-2xl font-bold">{orders.length}</div>
+            <p className="text-xs text-muted-foreground">All time orders</p>
           </CardContent>
         </Card>
-        
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Monthly Revenue</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Completed Orders</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">${totalRevenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold">
+              {orders.filter(order => order.status === 'order_completed_successfully').length}
+            </div>
+            <p className="text-xs text-muted-foreground">Successfully completed</p>
           </CardContent>
         </Card>
-        
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Completed Setups</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{completedSetups}/{mockOrders.length}</div>
+            <div className="text-2xl font-bold">
+              {orders.filter(order => 
+                !['order_completed_successfully', 'order_cancelled_client', 'order_cancelled_internal'].includes(order.status)
+              ).length}
+            </div>
+            <p className="text-xs text-muted-foreground">Active orders</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Payment Completed</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {orders.filter(order => order.status === 'payment_completed').length}
+            </div>
+            <p className="text-xs text-muted-foreground">Paid orders</p>
           </CardContent>
         </Card>
       </div>
@@ -147,50 +174,54 @@ export function ActiveOrders() {
                 <TableHead className="text-muted-foreground">Order ID</TableHead>
                 <TableHead className="text-muted-foreground">Client</TableHead>
                 <TableHead className="text-muted-foreground">Automation Type</TableHead>
-                <TableHead className="text-muted-foreground">Monthly Price</TableHead>
+                <TableHead className="text-muted-foreground">Price</TableHead>
                 <TableHead className="text-muted-foreground">Status</TableHead>
                 <TableHead className="text-muted-foreground">Date Created</TableHead>
                 <TableHead className="text-muted-foreground">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockOrders.map((order) => (
-                <TableRow 
-                  key={order.id} 
-                  className="cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => handleViewOrder(order.id)}
-                >
-                  <TableCell className="font-medium text-foreground">{order.id}</TableCell>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium text-foreground">{order.clientName}</div>
-                      <div className="text-sm text-muted-foreground">{order.clientEmail}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-foreground">{order.automationType}</TableCell>
-                  <TableCell className="font-medium text-foreground">${order.monthlyPrice}</TableCell>
-                  <TableCell>{getStatusBadge(order.status)}</TableCell>
-                  <TableCell className="text-muted-foreground">{order.dateCreated}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger 
-                        asChild
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleViewOrder(order.id)}>
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Details
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+              {orders.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    No orders found. Create your first order to get started.
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                orders.map((order) => (
+                  <TableRow 
+                    key={order.id} 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleViewOrder(order.id)}
+                  >
+                    <TableCell className="font-medium">#{order.id.slice(-8)}</TableCell>
+                    <TableCell>{order.client_name}</TableCell>
+                    <TableCell>{order.automation_title}</TableCell>
+                    <TableCell>{order.agreed_price}</TableCell>
+                    <TableCell>{getStatusBadge(order.status)}</TableCell>
+                    <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewOrder(order.id);
+                          }}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
