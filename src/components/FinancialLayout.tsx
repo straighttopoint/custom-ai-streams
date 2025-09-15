@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useNavigate, useLocation } from "react-router-dom";
 import Deposit from "@/pages/Deposit";
 import Withdraw from "@/pages/Withdraw";
 import TransactionHistory from "@/pages/TransactionHistory";
@@ -18,6 +19,40 @@ export function FinancialLayout({ defaultTab = "deposit" }: FinancialLayoutProps
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("marketplace");
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Determine current tab based on URL
+  const getCurrentTab = () => {
+    if (location.pathname === '/withdraw') return 'withdraw';
+    if (location.pathname === '/transaction-history') return 'transactions';
+    return 'deposit';
+  };
+
+  const handleTabChange = (value: string) => {
+    switch (value) {
+      case 'deposit':
+        navigate('/deposit');
+        break;
+      case 'withdraw':
+        navigate('/withdraw');
+        break;
+      case 'transactions':
+        navigate('/transaction-history');
+        break;
+    }
+  };
+
+  const handleSidebarNavigation = (tab: string) => {
+    // Handle sidebar navigation to different parts of the app
+    if (tab === 'marketplace' || tab === 'automation-list' || tab === 'active-orders' || tab === 'analytics' || tab === 'support') {
+      navigate('/dashboard');
+      // Store the tab in sessionStorage so dashboard can pick it up
+      sessionStorage.setItem('dashboardTab', tab);
+    } else {
+      setActiveTab(tab);
+    }
+  };
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -25,7 +60,7 @@ export function FinancialLayout({ defaultTab = "deposit" }: FinancialLayoutProps
       <div className="hidden md:block">
         <Sidebar
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleSidebarNavigation}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
@@ -40,7 +75,7 @@ export function FinancialLayout({ defaultTab = "deposit" }: FinancialLayoutProps
           <Sidebar
             activeTab={activeTab}
             onTabChange={(tab) => {
-              setActiveTab(tab);
+              handleSidebarNavigation(tab);
               setIsMobileSidebarOpen(false);
             }}
             isCollapsed={false}
@@ -73,7 +108,7 @@ export function FinancialLayout({ defaultTab = "deposit" }: FinancialLayoutProps
               <p className="text-muted-foreground">Manage your deposits, withdrawals, and transaction history</p>
             </div>
 
-            <Tabs defaultValue={defaultTab} className="w-full">
+            <Tabs value={getCurrentTab()} onValueChange={handleTabChange} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="deposit">Deposit</TabsTrigger>
                 <TabsTrigger value="withdraw">Withdraw</TabsTrigger>

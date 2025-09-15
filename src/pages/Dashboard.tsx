@@ -25,27 +25,21 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Check if we need to set a specific tab from sessionStorage (when navigating from financial pages)
+    const savedTab = sessionStorage.getItem('dashboardTab');
+    if (savedTab) {
+      setActiveTab(savedTab);
+      sessionStorage.removeItem('dashboardTab');
+    }
+
     const handleSetActiveTab = (event: CustomEvent) => {
       setActiveTab(event.detail);
     };
     
-    // Handle navigation from header money dropdown
-    const handleNavigation = () => {
-      const path = window.location.pathname;
-      if (path === '/withdraw') setActiveTab('withdraw');
-      else if (path === '/deposit') setActiveTab('deposit');
-      else if (path === '/transaction-history') setActiveTab('transaction-history');
-    };
-    
     window.addEventListener('setActiveTab', handleSetActiveTab as EventListener);
-    window.addEventListener('popstate', handleNavigation);
-    
-    // Check initial path
-    handleNavigation();
     
     return () => {
       window.removeEventListener('setActiveTab', handleSetActiveTab as EventListener);
-      window.removeEventListener('popstate', handleNavigation);
     };
   }, []);
 
