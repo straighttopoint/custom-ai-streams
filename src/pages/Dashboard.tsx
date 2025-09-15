@@ -6,10 +6,6 @@ import { Marketplace } from "@/components/marketplace/Marketplace";
 import { AutomationList } from "@/components/automation/AutomationList";
 import { Analytics } from "@/components/analytics/Analytics";
 import { ActiveOrders } from "@/components/orders/ActiveOrders";
-import { AdminOrders } from "@/components/admin/AdminOrders";
-import { AdminAutomations } from "@/components/admin/AdminAutomations";
-import { AdminSupport } from "@/components/admin/AdminSupport";
-import { AdminCustomRequests } from "@/components/admin/AdminCustomRequests";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
@@ -26,15 +22,7 @@ export default function Dashboard() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { user, loading } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (user?.email) {
-      const adminEmail = 'straighttopoint.business@gmail.com';
-      setIsAdmin(user.email === adminEmail);
-    }
-  }, [user]);
 
   useEffect(() => {
     const handleSetActiveTab = (event: CustomEvent) => {
@@ -101,15 +89,6 @@ export default function Dashboard() {
         return <Deposit />;
       case "transaction-history":
         return <TransactionHistory />;
-      // Admin sections
-      case "admin-orders":
-        return <AdminOrders />;
-      case "admin-automations":
-        return <AdminAutomations />;
-      case "admin-support":
-        return <AdminSupport />;
-      case "admin-requests":
-        return <AdminCustomRequests />;
       default:
         return <Marketplace />;
     }
@@ -124,7 +103,6 @@ export default function Dashboard() {
           onTabChange={setActiveTab}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          isAdmin={isAdmin}
         />
       </div>
 
@@ -142,7 +120,6 @@ export default function Dashboard() {
             }}
             isCollapsed={false}
             onToggleCollapse={() => {}}
-            isAdmin={isAdmin}
           />
         </SheetContent>
       </Sheet>

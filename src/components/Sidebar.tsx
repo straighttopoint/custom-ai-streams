@@ -12,10 +12,7 @@ import {
   MessageSquare, 
   Settings,
   ChevronDown,
-  ChevronRight,
-  Shield,
-  Users,
-  FileText
+  ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,13 +21,11 @@ interface SidebarProps {
   onTabChange: (tab: string) => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  isAdmin?: boolean;
 }
 
-export function Sidebar({ activeTab, onTabChange, isCollapsed, onToggleCollapse, isAdmin = false }: SidebarProps) {
+export function Sidebar({ activeTab, onTabChange, isCollapsed, onToggleCollapse }: SidebarProps) {
   const [isAutomationsExpanded, setIsAutomationsExpanded] = useState(true);
   const [isOrdersExpanded, setIsOrdersExpanded] = useState(true);
-  const [isAdminExpanded, setIsAdminExpanded] = useState(true);
 
   const navigationItems = [
     {
@@ -73,20 +68,6 @@ export function Sidebar({ activeTab, onTabChange, isCollapsed, onToggleCollapse,
       label: "Support",
       icon: MessageSquare,
     },
-    ...(isAdmin ? [{
-      id: "admin",
-      label: "Admin Panel",
-      icon: Shield,
-      expandable: true,
-      isExpanded: isAdminExpanded,
-      onToggle: () => setIsAdminExpanded(!isAdminExpanded),
-      children: [
-        { id: "admin-orders", label: "Manage Orders", icon: ShoppingCart },
-        { id: "admin-automations", label: "Manage Automations", icon: Bot },
-        { id: "admin-support", label: "Support Tickets", icon: MessageSquare },
-        { id: "admin-requests", label: "Custom Requests", icon: FileText },
-      ]
-    }] : []),
   ];
 
   return (
@@ -96,9 +77,7 @@ export function Sidebar({ activeTab, onTabChange, isCollapsed, onToggleCollapse,
           {!isCollapsed && (
             <div>
               <h1 className="text-xl font-bold text-primary">Let Us Defy</h1>
-              <p className="text-sm text-muted-foreground">
-                {isAdmin ? "Admin Dashboard" : "AI Automation Platform"}
-              </p>
+              <p className="text-sm text-muted-foreground">AI Automation Platform</p>
             </div>
           )}
           <Button
