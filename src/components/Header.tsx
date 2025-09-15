@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, User, Globe, DollarSign, LogOut, ArrowDownLeft, ArrowUpRight, History } from "lucide-react";
+import { Bell, User, Globe, Wallet, LogOut, ArrowDownLeft, ArrowUpRight, History } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import {
@@ -67,7 +67,7 @@ export function Header() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <div className="flex items-center gap-2 bg-success/10 text-success px-2 sm:px-3 py-1 rounded-lg cursor-pointer hover:bg-success/20 transition-colors">
-                <DollarSign className="h-4 w-4" />
+                <Wallet className="h-4 w-4" />
                 <span className="font-medium text-sm sm:text-base">
                   ${wallet?.balance?.toFixed(2) || '0.00'}
                 </span>
