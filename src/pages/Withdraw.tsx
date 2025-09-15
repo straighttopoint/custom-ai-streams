@@ -49,19 +49,37 @@ export default function Withdraw() {
       return;
     }
 
+    if (parseFloat(amount) < 10) {
+      toast.error("Minimum withdrawal amount is $10.00");
+      return;
+    }
+
     try {
+      const withdrawAmount = parseFloat(amount);
+      
       // Create withdrawal transaction
       const { error: transactionError } = await supabase
         .from('transactions')
         .insert({
           user_id: user?.id,
           type: 'withdrawal',
-          amount: -parseFloat(amount),
-          description: `Withdrawal of $${amount}`,
+          amount: -withdrawAmount,
+          description: `Withdrawal request of $${amount}`,
           status: 'pending'
         });
 
       if (transactionError) throw transactionError;
+
+      // Update wallet - move money from available_for_withdrawal to pending
+      const { error: walletError } = await supabase
+        .from('wallets')
+        .update({
+          available_for_withdrawal: wallet.available_for_withdrawal - withdrawAmount,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user?.id);
+
+      if (walletError) throw walletError;
 
       toast.success("Withdrawal request submitted successfully");
       setAmount("");
