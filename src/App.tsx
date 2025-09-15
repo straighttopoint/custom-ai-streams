@@ -1,6 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { AuthProvider } from "@/hooks/useAuth";
+import { WalletProvider } from "@/hooks/useWallet";
 
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -22,22 +23,24 @@ const App = () => (
       <Toaster />
       <Sonner />
       <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/automation/:id" element={<AutomationDetails />} />
-            <Route path="/order/:id" element={<OrderDetails />} />
-            <Route path="/new-order" element={<NewOrder />} />
-            <Route path="/deposit" element={<FinancialPage />} />
-            <Route path="/withdraw" element={<WithdrawPage />} />
-            <Route path="/transaction-history" element={<TransactionHistoryPage />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <WalletProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/automation/:id" element={<AutomationDetails />} />
+              <Route path="/order/:id" element={<OrderDetails />} />
+              <Route path="/new-order" element={<NewOrder />} />
+              <Route path="/deposit" element={<FinancialPage />} />
+              <Route path="/withdraw" element={<WithdrawPage />} />
+              <Route path="/transaction-history" element={<TransactionHistoryPage />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </WalletProvider>
       </AuthProvider>
   </>
 );

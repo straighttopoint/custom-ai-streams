@@ -7,36 +7,15 @@ import { ArrowLeft, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useWallet } from "@/hooks/useWallet";
 import { toast } from "sonner";
 
 export default function Withdraw() {
   const [amount, setAmount] = useState("");
-  const [wallet, setWallet] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { wallet, loading, refreshWallet } = useWallet();
 
-  useEffect(() => {
-    if (user) {
-      fetchWallet();
-    }
-  }, [user]);
-
-  const fetchWallet = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('wallets')
-        .select('*')
-        .eq('user_id', user?.id)
-        .single();
-
-      if (error) throw error;
-      setWallet(data);
-    } catch (error) {
-      console.error('Error fetching wallet:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // No need for local wallet fetching since we're using the context
 
   const handleWithdraw = async () => {
     if (!amount || parseFloat(amount) <= 0) {
@@ -68,7 +47,7 @@ export default function Withdraw() {
 
       toast.success("Withdrawal request submitted successfully");
       setAmount("");
-      fetchWallet();
+      refreshWallet();
     } catch (error) {
       console.error('Error processing withdrawal:', error);
       if (error.message?.includes('Insufficient funds')) {

@@ -11,47 +11,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { useWallet } from "@/hooks/useWallet";
 
 export function Header() {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
-  const [wallet, setWallet] = useState<any>(null);
-
-  useEffect(() => {
-    if (user) {
-      fetchWallet();
-    }
-  }, [user]);
-
-  const fetchWallet = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('wallets')
-        .select('*')
-        .eq('user_id', user?.id)
-        .single();
-
-      if (error) {
-        // If no wallet exists, create one
-        if (error.code === 'PGRST116') {
-          const { data: newWallet, error: createError } = await supabase
-            .from('wallets')
-            .insert({ user_id: user?.id })
-            .select()
-            .single();
-          
-          if (!createError) {
-            setWallet(newWallet);
-          }
-        }
-        return;
-      }
-      setWallet(data);
-    } catch (error) {
-      console.error('Error fetching wallet:', error);
-    }
-  };
+  const { wallet } = useWallet();
   return (
     <header className="bg-card border-b border-border px-6 py-4">
       <div className="flex items-center justify-between">

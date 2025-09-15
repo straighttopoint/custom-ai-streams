@@ -1,32 +1,31 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { 
-  ArrowLeft, 
   CreditCard, 
-  Wallet, 
-  Shield,
+  Wallet,
   DollarSign,
-  Clock,
-  CheckCircle2,
-  AlertCircle
+  Building2,
+  ShieldCheck,
+  Clock
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useWallet } from "@/hooks/useWallet";
 import { toast } from "sonner";
 
 interface PaymentMethod {
   id: string;
   name: string;
   description: string;
-  icon: React.ElementType;
-  fees: string;
+  icon: React.ComponentType<any>;
+  fee: number;
+  feeType: "percentage" | "fixed";
   processingTime: string;
   minAmount: number;
   maxAmount: number;
@@ -36,80 +35,44 @@ const paymentMethods: PaymentMethod[] = [
   {
     id: "credit_card",
     name: "Credit/Debit Card",
-    description: "Visa, Mastercard, American Express",
+    description: "Instant deposit via Visa, Mastercard, or American Express",
     icon: CreditCard,
-    fees: "2.9% + $0.30",
+    fee: 2.9,
+    feeType: "percentage",
     processingTime: "Instant",
-    minAmount: 5,
-    maxAmount: 5000
+    minAmount: 1,
+    maxAmount: 50000,
   },
   {
     id: "paypal",
     name: "PayPal",
-    description: "Pay with your PayPal account",
+    description: "Secure payment through your PayPal account",
     icon: Wallet,
-    fees: "3.49% + $0.49",
+    fee: 3.49,
+    feeType: "percentage", 
     processingTime: "Instant",
-    minAmount: 5,
-    maxAmount: 10000
+    minAmount: 1,
+    maxAmount: 10000,
   },
   {
     id: "bank_transfer",
     name: "Bank Transfer",
-    description: "Direct bank transfer (ACH)",
-    icon: DollarSign,
-    fees: "$1.00 flat fee",
+    description: "Direct transfer from your bank account",
+    icon: Building2,
+    fee: 1.00,
+    feeType: "fixed",
     processingTime: "1-3 business days",
-    minAmount: 25,
-    maxAmount: 25000
-  }
+    minAmount: 10,
+    maxAmount: 100000,
+  },
 ];
 
 export default function Deposit() {
   const [amount, setAmount] = useState("");
   const [selectedMethod, setSelectedMethod] = useState("credit_card");
-  const [wallet, setWallet] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
-  const navigate = useNavigate();
   const { user } = useAuth();
-
-  useEffect(() => {
-    if (user) {
-      fetchWallet();
-    }
-  }, [user]);
-
-  const fetchWallet = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('wallets')
-        .select('*')
-        .eq('user_id', user?.id)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      
-      if (!data) {
-        // Create wallet if it doesn't exist
-        const { data: newWallet, error: createError } = await supabase
-          .from('wallets')
-          .insert({ user_id: user?.id })
-          .select()
-          .single();
-        
-        if (!createError) {
-          setWallet(newWallet);
-        }
-      } else {
-        setWallet(data);
-      }
-    } catch (error) {
-      console.error('Error fetching wallet:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { wallet, loading, refreshWallet } = useWallet();
 
   const selectedPaymentMethod = paymentMethods.find(method => method.id === selectedMethod);
 
@@ -166,7 +129,7 @@ export default function Deposit() {
 
       toast.success(`Successfully deposited $${depositAmount.toFixed(2)}`);
       setAmount("");
-      await fetchWallet(); // Refresh wallet data
+      await refreshWallet(); // Refresh wallet data
       
     } catch (error) {
       console.error('Error processing deposit:', error);
@@ -202,24 +165,12 @@ export default function Deposit() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-success mb-2">
+              <div className="text-3xl font-bold text-success">
                 ${wallet?.balance?.toFixed(2) || '0.00'}
               </div>
-              <p className="text-sm text-muted-foreground">Available for orders</p>
-            </CardContent>
-          </Card>
-
-          {/* Security Notice */}
-          <Card className="mt-4">
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-3">
-                <Shield className="h-5 w-5 text-success mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-sm">Secure Payments</h4>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Your payment information is encrypted and secure. We never store your card details.
-                  </p>
-                </div>
+              <div className="flex items-center gap-1 mt-2 text-sm text-muted-foreground">
+                <ShieldCheck className="h-4 w-4" />
+                <span>FDIC Insured</span>
               </div>
             </CardContent>
           </Card>
@@ -229,13 +180,13 @@ export default function Deposit() {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Deposit Funds</CardTitle>
+              <CardTitle>Deposit Methods</CardTitle>
               <CardDescription>
-                Choose your payment method and enter the amount you'd like to deposit
+                Choose your preferred payment method
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Payment Methods */}
+              {/* Payment Method Selection */}
               <div>
                 <Label className="text-base font-medium">Payment Method</Label>
                 <RadioGroup 
@@ -243,93 +194,81 @@ export default function Deposit() {
                   onValueChange={setSelectedMethod}
                   className="mt-3"
                 >
-                  {paymentMethods.map((method) => {
-                    const Icon = method.icon;
-                    return (
-                      <div key={method.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-accent/50 cursor-pointer">
-                        <RadioGroupItem value={method.id} id={method.id} className="mt-1" />
-                        <div className="flex-1">
-                          <Label htmlFor={method.id} className="cursor-pointer">
-                            <div className="flex items-center gap-3 mb-2">
-                              <Icon className="h-5 w-5" />
-                              <span className="font-medium">{method.name}</span>
-                              <Badge variant="secondary" className="text-xs">
-                                <Clock className="h-3 w-3 mr-1" />
-                                {method.processingTime}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-1">{method.description}</p>
-                            <p className="text-xs text-muted-foreground">
-                              Fee: {method.fees} • Min: ${method.minAmount} • Max: ${method.maxAmount.toLocaleString()}
+                  {paymentMethods.map((method) => (
+                    <div key={method.id} className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <RadioGroupItem value={method.id} id={method.id} />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                          <method.icon className="h-5 w-5" />
+                          <div>
+                            <label htmlFor={method.id} className="font-medium cursor-pointer">
+                              {method.name}
+                            </label>
+                            <p className="text-sm text-muted-foreground">
+                              {method.description}
                             </p>
-                          </Label>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 mt-2">
+                          <Badge variant="secondary">
+                            {method.feeType === "percentage" ? `${method.fee}%` : `$${method.fee}`} fee
+                          </Badge>
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            {method.processingTime}
+                          </div>
                         </div>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </RadioGroup>
               </div>
 
-              <Separator />
-
               {/* Amount Input */}
               <div>
-                <Label htmlFor="amount" className="text-base font-medium">
-                  Deposit Amount
-                </Label>
-                <div className="mt-2 space-y-3">
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="amount"
-                      type="number"
-                      step="0.01"
-                      min={selectedPaymentMethod?.minAmount || 5}
-                      max={selectedPaymentMethod?.maxAmount || 5000}
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      placeholder="0.00"
-                      className="pl-10 text-lg"
-                    />
-                  </div>
+                <Label htmlFor="amount">Amount ($)</Label>
+                <div className="relative mt-2">
+                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="amount"
+                    type="number"
+                    step="0.01"
+                    min={selectedPaymentMethod?.minAmount}
+                    max={selectedPaymentMethod?.maxAmount}
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="0.00"
+                    className="pl-10"
+                  />
+                </div>
+                {selectedPaymentMethod && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Min: ${selectedPaymentMethod.minAmount} • Max: ${selectedPaymentMethod.maxAmount.toLocaleString()}
+                  </p>
+                )}
+              </div>
 
-                  {/* Quick Amount Buttons */}
-                  <div className="grid grid-cols-4 gap-2">
-                    {[25, 50, 100, 250].map((preset) => (
-                      <Button
-                        key={preset}
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setAmount(preset.toString())}
-                        disabled={preset < (selectedPaymentMethod?.minAmount || 5)}
-                      >
-                        ${preset}
-                      </Button>
-                    ))}
-                  </div>
-
-                  {/* Amount Validation */}
-                  {amount && selectedPaymentMethod && (
-                    <div className="flex items-center gap-2 text-sm">
-                      {validateAmount() ? (
-                        <div className="flex items-center gap-2 text-success">
-                          <CheckCircle2 className="h-4 w-4" />
-                          Valid amount
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-destructive">
-                          <AlertCircle className="h-4 w-4" />
-                          Amount must be between ${selectedPaymentMethod.minAmount} and ${selectedPaymentMethod.maxAmount.toLocaleString()}
-                        </div>
-                      )}
-                    </div>
-                  )}
+              {/* Quick Amount Buttons */}
+              <div>
+                <Label className="text-sm">Quick amounts</Label>
+                <div className="flex gap-2 mt-2">
+                  {[25, 50, 100, 250, 500, 1000].map((quickAmount) => (
+                    <Button
+                      key={quickAmount}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setAmount(quickAmount.toString())}
+                      className="text-xs"
+                    >
+                      ${quickAmount}
+                    </Button>
+                  ))}
                 </div>
               </div>
 
-              {/* Fee Breakdown */}
-              {amount && validateAmount() && (
-                <Card className="bg-muted/50">
+              {/* Payment Summary */}
+              {amount && parseFloat(amount) > 0 && (
+                <Card className="bg-muted/30">
                   <CardContent className="pt-4">
                     <h4 className="font-medium mb-3">Payment Summary</h4>
                     <div className="space-y-2 text-sm">
@@ -353,26 +292,20 @@ export default function Deposit() {
 
               {/* Deposit Button */}
               <Button 
-                onClick={handleDeposit}
-                className="w-full"
-                disabled={!validateAmount() || processing}
+                onClick={handleDeposit} 
+                className="w-full" 
                 size="lg"
+                disabled={!validateAmount() || processing}
               >
-                {processing ? (
-                  "Processing..."
-                ) : (
-                  <>
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Deposit ${amount || '0.00'}
-                  </>
-                )}
+                {processing ? "Processing..." : `Deposit $${amount || '0'}`}
               </Button>
 
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">
-                  By clicking "Deposit", you agree to our terms of service and privacy policy.
-                  <br />
-                  <strong>Note:</strong> This is a demo interface. Payment integration coming soon.
+              {/* Disclaimer */}
+              <div className="bg-muted/30 p-4 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Demo Mode:</strong> This is a demonstration of payment processing. 
+                  In a live environment, this would integrate with real payment processors 
+                  like Stripe, PayPal, or bank APIs for secure transactions.
                 </p>
               </div>
             </CardContent>
