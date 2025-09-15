@@ -1,4 +1,9 @@
 body {
-  max-height: screen;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#root {
+  height: 100vh;
   overflow: hidden;
 }

@@ -13,7 +13,6 @@ export default function Withdraw() {
   const [amount, setAmount] = useState("");
   const [wallet, setWallet] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
   const { user } = useAuth();
 
   useEffect(() => {
@@ -78,12 +77,9 @@ export default function Withdraw() {
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-2xl">
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-2xl font-bold">Withdraw Funds</h1>
+    <div className="w-full max-w-2xl mx-auto">
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold">Withdraw Funds</h2>
       </div>
 
       <div className="grid gap-6">

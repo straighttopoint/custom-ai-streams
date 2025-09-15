@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle, XCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ArrowUpRight, ArrowDownLeft, Clock, CheckCircle, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
@@ -20,7 +19,6 @@ interface Transaction {
 export default function TransactionHistory() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
   const { user } = useAuth();
 
   useEffect(() => {
@@ -109,12 +107,9 @@ export default function TransactionHistory() {
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-2xl font-bold">Transaction History</h1>
+    <div className="w-full max-w-4xl mx-auto">
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold">Transaction History</h2>
       </div>
 
       <Card>
@@ -125,13 +120,9 @@ export default function TransactionHistory() {
           {transactions.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No transactions found</p>
-              <Button 
-                variant="outline" 
-                className="mt-4"
-                onClick={() => navigate('/deposit')}
-              >
-                Make your first deposit
-              </Button>
+              <p className="mt-4 text-sm">
+                Use the Deposit tab to make your first transaction
+              </p>
             </div>
           ) : (
             <div className="space-y-4">

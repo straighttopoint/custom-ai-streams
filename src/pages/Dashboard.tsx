@@ -95,7 +95,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex max-h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <Sidebar
@@ -140,8 +140,10 @@ export default function Dashboard() {
             <Header />
           </div>
         </div>
-        <main className="flex-1 p-2 max-h-[100%] overflow-auto">
-          {renderContent()}
+        <main className="flex-1 overflow-hidden">
+          <div className="h-full overflow-auto p-2">
+            {renderContent()}
+          </div>
         </main>
       </div>
     </div>

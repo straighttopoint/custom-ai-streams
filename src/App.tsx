@@ -11,9 +11,9 @@ import OrderDetails from "./pages/OrderDetails";
 import NewOrder from "./pages/NewOrder";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
-import Deposit from "./pages/Deposit";
-import Withdraw from "./pages/Withdraw";
-import TransactionHistory from "./pages/TransactionHistory";
+import FinancialPage from "./pages/FinancialPage";
+import WithdrawPage from "./pages/WithdrawPage";
+import TransactionHistoryPage from "./pages/TransactionHistoryPage";
 import NotFound from "./pages/NotFound";
 import "./App.css"
 
@@ -31,9 +31,9 @@ const App = () => (
             <Route path="/automation/:id" element={<AutomationDetails />} />
             <Route path="/order/:id" element={<OrderDetails />} />
             <Route path="/new-order" element={<NewOrder />} />
-            <Route path="/deposit" element={<Deposit />} />
-            <Route path="/withdraw" element={<Withdraw />} />
-            <Route path="/transaction-history" element={<TransactionHistory />} />
+            <Route path="/deposit" element={<FinancialPage />} />
+            <Route path="/withdraw" element={<WithdrawPage />} />
+            <Route path="/transaction-history" element={<TransactionHistoryPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

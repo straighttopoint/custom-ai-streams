@@ -196,15 +196,10 @@ export default function Deposit() {
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">Add Funds</h1>
-          <p className="text-muted-foreground">Deposit money to your account</p>
-        </div>
+    <div className="w-full max-w-4xl mx-auto">
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold mb-2">Add Funds</h2>
+        <p className="text-muted-foreground">Deposit money to your account</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
