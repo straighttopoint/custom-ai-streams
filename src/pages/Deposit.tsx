@@ -152,33 +152,22 @@ export default function Deposit() {
     setProcessing(true);
 
     try {
-      // Create deposit transaction
-      const { error: transactionError } = await supabase
-        .from('transactions')
-        .insert({
-          user_id: user?.id,
-          type: 'deposit',
-          amount: parseFloat(amount),
-          description: `Deposit via ${selectedPaymentMethod?.name} - $${amount}`,
-          status: 'completed'
-        });
+      const depositAmount = parseFloat(amount);
+      const fees = calculateFees();
+      
+      // Call the deposit function
+      const { data, error } = await supabase.rpc('handle_deposit', {
+        p_user_id: user?.id,
+        p_amount: depositAmount,
+        p_description: `Deposit via ${selectedPaymentMethod?.name} - Fee: $${fees.toFixed(2)}`
+      });
 
-      if (transactionError) throw transactionError;
+      if (error) throw error;
 
-      // Update wallet balance
-      const { error: walletError } = await supabase
-        .from('wallets')
-        .update({ 
-          balance: (wallet?.balance || 0) + parseFloat(amount),
-          total_earned: (wallet?.total_earned || 0) + parseFloat(amount)
-        })
-        .eq('user_id', user?.id);
-
-      if (walletError) throw walletError;
-
-      toast.success(`Successfully deposited $${amount} to your account!`);
+      toast.success(`Successfully deposited $${depositAmount.toFixed(2)}`);
       setAmount("");
-      fetchWallet();
+      await fetchWallet(); // Refresh wallet data
+      
     } catch (error) {
       console.error('Error processing deposit:', error);
       toast.error("Failed to process deposit. Please try again.");

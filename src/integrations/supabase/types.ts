@@ -393,7 +393,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      handle_deposit: {
+        Args: { p_amount: number; p_description?: string; p_user_id: string }
+        Returns: boolean
+      }
+      handle_withdrawal: {
+        Args: { p_amount: number; p_description?: string; p_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

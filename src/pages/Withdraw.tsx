@@ -57,36 +57,25 @@ export default function Withdraw() {
     try {
       const withdrawAmount = parseFloat(amount);
       
-      // Create withdrawal transaction
-      const { error: transactionError } = await supabase
-        .from('transactions')
-        .insert({
-          user_id: user?.id,
-          type: 'withdrawal',
-          amount: -withdrawAmount,
-          description: `Withdrawal request of $${amount}`,
-          status: 'pending'
-        });
+      // Call the withdrawal function
+      const { data, error } = await supabase.rpc('handle_withdrawal', {
+        p_user_id: user?.id,
+        p_amount: withdrawAmount,
+        p_description: `Withdrawal request of $${amount}`
+      });
 
-      if (transactionError) throw transactionError;
-
-      // Update wallet - move money from available_for_withdrawal to pending
-      const { error: walletError } = await supabase
-        .from('wallets')
-        .update({
-          available_for_withdrawal: wallet.available_for_withdrawal - withdrawAmount,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user?.id);
-
-      if (walletError) throw walletError;
+      if (error) throw error;
 
       toast.success("Withdrawal request submitted successfully");
       setAmount("");
       fetchWallet();
     } catch (error) {
       console.error('Error processing withdrawal:', error);
-      toast.error("Failed to process withdrawal");
+      if (error.message?.includes('Insufficient funds')) {
+        toast.error("Insufficient funds available for withdrawal");
+      } else {
+        toast.error("Failed to process withdrawal");
+      }
     }
   };
 
