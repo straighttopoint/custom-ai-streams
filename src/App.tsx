@@ -11,7 +11,6 @@ import OrderDetails from "./pages/OrderDetails";
 import NewOrder from "./pages/NewOrder";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
-import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import "./App.css"
 
@@ -25,7 +24,6 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/automation/:id" element={<AutomationDetails />} />
             <Route path="/order/:id" element={<OrderDetails />} />
