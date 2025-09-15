@@ -108,11 +108,23 @@ export function Analytics() {
               className="h-[300px]"
             >
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={salesData}>
-                  <XAxis dataKey="month" />
-                  <YAxis />
+                <BarChart data={salesData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <XAxis 
+                    dataKey="month" 
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `${value}`}
+                  />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="automations" fill="hsl(var(--primary))" radius={4} />
+                  <Bar dataKey="automations" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -135,16 +147,32 @@ export function Analytics() {
               className="h-[300px]"
             >
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={revenueData}>
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <ChartTooltip content={<ChartTooltipContent />} />
+                <LineChart data={revenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <XAxis 
+                    dataKey="month" 
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                  />
+                  <ChartTooltip 
+                    content={<ChartTooltipContent />}
+                    formatter={(value) => [`$${value}`, "Revenue"]}
+                  />
                   <Line 
                     type="monotone" 
                     dataKey="revenue" 
-                    stroke="hsl(var(--secondary))" 
-                    strokeWidth={2}
-                    dot={{ fill: "hsl(var(--secondary))", strokeWidth: 2, r: 4 }}
+                    stroke="hsl(var(--primary))" 
+                    strokeWidth={3}
+                    dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 6 }}
+                    activeDot={{ r: 8, stroke: "hsl(var(--primary))", strokeWidth: 2 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -172,15 +200,22 @@ export function Analytics() {
                     data={categoryData}
                     cx="50%"
                     cy="50%"
-                    outerRadius={80}
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={100}
+                    fill="#8884d8"
                     dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}%`}
+                    stroke="hsl(var(--background))"
+                    strokeWidth={2}
                   >
                     {categoryData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <ChartTooltip 
+                    content={<ChartTooltipContent />}
+                    formatter={(value) => [`${value}%`, "Percentage"]}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </ChartContainer>
