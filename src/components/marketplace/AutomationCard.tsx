@@ -12,15 +12,20 @@ interface AutomationCardProps {
   id: string;
   title: string;
   description: string;
-  category: string;
+  category: string[];
+  platforms: string[];
+  setup_time: string;
+  complexity: string;
   rating: number;
-  reviews: number;
+  reviews_count: number;
   cost: number;
-  suggestedPrice: number;
+  suggested_price: number;
   profit: number;
-  image?: string;
-  tags: string[];
-  isActive: boolean;
+  margin: number;
+  features: string[];
+  requirements: string[];
+  media: any;
+  status: string;
   isInUserList?: boolean;
   onAutomationAdded?: (automationId: string) => void;
   onAutomationRemoved?: (automationId: string) => void;
@@ -31,14 +36,14 @@ export function AutomationCard({
   title,
   description,
   category,
+  platforms,
   rating,
-  reviews,
+  reviews_count,
   cost,
-  suggestedPrice,
+  suggested_price,
   profit,
-  image,
-  tags,
-  isActive,
+  features,
+  status,
   isInUserList = false,
   onAutomationAdded,
   onAutomationRemoved
@@ -47,7 +52,7 @@ export function AutomationCard({
   const [isAdding, setIsAdding] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const profitMargin = ((profit / suggestedPrice) * 100).toFixed(1);
+  const profitMargin = ((profit / suggested_price) * 100).toFixed(1);
 
   const navigate = useNavigate();
 
@@ -64,16 +69,7 @@ export function AutomationCard({
         .insert({
           user_id: user.id,
           automation_id: id,
-          automation_title: title,
-          automation_description: description,
-          automation_category: category,
-          automation_cost: cost,
-          automation_suggested_price: suggestedPrice,
-          automation_profit: profit,
-          automation_rating: rating,
-          automation_reviews: reviews,
-          automation_tags: tags,
-          is_active: isActive
+          is_active: status === 'Active'
         });
 
       if (error) {
@@ -124,11 +120,7 @@ export function AutomationCard({
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
           <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-            {image ? (
-              <img src={image} alt={title} className="w-12 h-12 object-cover rounded" />
-            ) : (
-              <Bot className="w-8 h-8 text-primary" />
-            )}
+            <Bot className="w-8 h-8 text-primary" />
           </div>
           
           <div className="flex-1 min-w-0">
@@ -143,8 +135,8 @@ export function AutomationCard({
               </div>
               
               <div className="flex items-center gap-1">
-                <Badge variant={isActive ? "default" : "secondary"} className="bg-success text-success-foreground">
-                  {isActive ? "Active" : "Draft"}
+                <Badge variant={status === 'Active' ? "default" : "secondary"} className="bg-success text-success-foreground">
+                  {status}
                 </Badge>
               </div>
             </div>
@@ -153,18 +145,18 @@ export function AutomationCard({
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 fill-warning text-warning" />
                 <span className="text-sm font-medium">{rating}</span>
-                <span className="text-sm text-muted-foreground">({reviews})</span>
+                <span className="text-sm text-muted-foreground">({reviews_count})</span>
               </div>
               
               <Badge variant="outline" className="text-xs">
-                {category}
+                {category[0]}
               </Badge>
             </div>
 
             <div className="flex flex-wrap gap-1 mt-2">
-              {tags.map((tag, index) => (
+              {platforms.slice(0, 3).map((platform, index) => (
                 <Badge key={index} variant="secondary" className="text-xs">
-                  {tag}
+                  {platform}
                 </Badge>
               ))}
             </div>
@@ -178,7 +170,7 @@ export function AutomationCard({
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Suggested Price</p>
-            <p className="font-semibold">${suggestedPrice}</p>
+            <p className="font-semibold">${suggested_price}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Profit</p>

@@ -13,23 +13,33 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 interface UserAutomation {
   id: string;
   automation_id: string;
-  automation_title: string;
-  automation_description: string;
-  automation_category: string;
-  automation_cost: number;
-  automation_suggested_price: number;
-  automation_profit: number;
-  automation_rating: number;
-  automation_reviews: number;
-  automation_tags: string[];
+  user_id: string;
   is_active: boolean;
   added_at: string;
+  updated_at: string;
+}
+
+interface AutomationDetails {
+  id: string;
+  title: string;
+  description: string;
+  category: string[];
+  platforms: string[];
+  rating: number;
+  reviews_count: number;
+  cost: number;
+  suggested_price: number;
+  profit: number;
+  margin: number;
+  features: string[];
+  status: string;
 }
 
 export function AutomationList() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [automations, setAutomations] = useState<UserAutomation[]>([]);
+  const [userAutomations, setUserAutomations] = useState<UserAutomation[]>([]);
+  const [automationsDetails, setAutomationsDetails] = useState<AutomationDetails[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,14 +50,27 @@ export function AutomationList() {
 
   const fetchUserAutomations = async () => {
     try {
-      const { data, error } = await supabase
+      // First get user automations
+      const { data: userAutomationsData, error: userError } = await supabase
         .from('user_automations')
         .select('*')
         .eq('user_id', user?.id)
         .order('added_at', { ascending: false });
 
-      if (error) throw error;
-      setAutomations(data || []);
+      if (userError) throw userError;
+      setUserAutomations(userAutomationsData || []);
+
+      // Then get automation details for each automation ID
+      if (userAutomationsData && userAutomationsData.length > 0) {
+        const automationIds = userAutomationsData.map(ua => ua.automation_id);
+        const { data: automationsData, error: automationsError } = await supabase
+          .from('automations')
+          .select('*')
+          .in('id', automationIds);
+
+        if (automationsError) throw automationsError;
+        setAutomationsDetails(automationsData || []);
+      }
     } catch (error) {
       console.error('Error fetching user automations:', error);
       toast.error("Failed to load your automations");
@@ -56,16 +79,16 @@ export function AutomationList() {
     }
   };
 
-  const handleRemoveAutomation = async (automationId: string) => {
+  const handleRemoveAutomation = async (userAutomationId: string) => {
     try {
       const { error } = await supabase
         .from('user_automations')
         .delete()
-        .eq('id', automationId);
+        .eq('id', userAutomationId);
 
       if (error) throw error;
 
-      setAutomations(prev => prev.filter(auto => auto.id !== automationId));
+      setUserAutomations(prev => prev.filter(auto => auto.id !== userAutomationId));
       toast.success("Automation removed from your list");
     } catch (error) {
       console.error('Error removing automation:', error);
@@ -84,10 +107,10 @@ export function AutomationList() {
     );
   }
 
-  const totalProfit = automations.reduce((sum, automation) => sum + automation.automation_profit, 0);
-  const totalCost = automations.reduce((sum, automation) => sum + automation.automation_cost, 0);
-  const averageRating = automations.length > 0 
-    ? (automations.reduce((sum, automation) => sum + automation.automation_rating, 0) / automations.length).toFixed(1)
+  const totalProfit = automationsDetails.reduce((sum, automation) => sum + automation.profit, 0);
+  const totalCost = automationsDetails.reduce((sum, automation) => sum + automation.cost, 0);
+  const averageRating = automationsDetails.length > 0 
+    ? (automationsDetails.reduce((sum, automation) => sum + automation.rating, 0) / automationsDetails.length).toFixed(1)
     : "0.0";
 
   return (
@@ -100,7 +123,7 @@ export function AutomationList() {
           </p>
         </div>
         <div className="flex gap-2">
-          {automations.length > 0 && (
+          {userAutomations.length > 0 && (
             <Button 
               onClick={() => {
                 const event = new CustomEvent('setActiveTab', { detail: 'marketplace' });
@@ -128,7 +151,7 @@ export function AutomationList() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-primary">{automations.length}</div>
+            <div className="text-2xl font-bold text-primary">{userAutomations.length}</div>
             <p className="text-sm text-muted-foreground">Total Automations</p>
           </CardContent>
         </Card>
@@ -155,7 +178,7 @@ export function AutomationList() {
         </Card>
       </div>
 
-      {automations.length === 0 ? (
+      {userAutomations.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
             <Bot className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
@@ -175,11 +198,14 @@ export function AutomationList() {
         </Card>
       ) : (
         <div className="grid gap-6">
-          {automations.map((automation) => {
-            const profitMargin = ((automation.automation_profit / automation.automation_suggested_price) * 100).toFixed(1);
+          {userAutomations.map((userAutomation) => {
+            const automationDetails = automationsDetails.find(ad => ad.id === userAutomation.automation_id);
+            if (!automationDetails) return null;
+            
+            const profitMargin = ((automationDetails.profit / automationDetails.suggested_price) * 100).toFixed(1);
             
             return (
-              <Card key={automation.id} className="group hover:shadow-lg transition-all duration-200">
+              <Card key={userAutomation.id} className="group hover:shadow-lg transition-all duration-200">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -190,16 +216,16 @@ export function AutomationList() {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
-                            {automation.automation_title}
+                            {automationDetails.title}
                           </h3>
                           <p className="text-sm text-muted-foreground line-clamp-2">
-                            {automation.automation_description}
+                            {automationDetails.description}
                           </p>
                         </div>
                         
                         <div className="flex items-center gap-2">
-                          <Badge variant={automation.is_active ? "default" : "secondary"} className="bg-success text-success-foreground">
-                            {automation.is_active ? "Active" : "Draft"}
+                          <Badge variant={userAutomation.is_active ? "default" : "secondary"} className="bg-success text-success-foreground">
+                            {userAutomation.is_active ? "Active" : "Draft"}
                           </Badge>
                           
                           <DropdownMenu>
@@ -209,7 +235,7 @@ export function AutomationList() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => navigate(`/automation/${automation.automation_id}`)}>
+                              <DropdownMenuItem onClick={() => navigate(`/automation/${userAutomation.automation_id}`)}>
                                 <Eye className="mr-2 h-4 w-4" />
                                 View Details
                               </DropdownMenuItem>
@@ -224,12 +250,12 @@ export function AutomationList() {
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>Remove Automation</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                      Are you sure you want to remove "{automation.automation_title}" from your portfolio? This action cannot be undone.
+                                      Are you sure you want to remove "{automationDetails.title}" from your portfolio? This action cannot be undone.
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleRemoveAutomation(automation.id)}>
+                                    <AlertDialogAction onClick={() => handleRemoveAutomation(userAutomation.id)}>
                                       Remove
                                     </AlertDialogAction>
                                   </AlertDialogFooter>
@@ -243,19 +269,19 @@ export function AutomationList() {
                       <div className="flex items-center gap-4 mt-3">
                         <div className="flex items-center gap-1">
                           <Star className="w-4 h-4 fill-warning text-warning" />
-                          <span className="text-sm font-medium">{automation.automation_rating}</span>
-                          <span className="text-sm text-muted-foreground">({automation.automation_reviews})</span>
+                          <span className="text-sm font-medium">{automationDetails.rating}</span>
+                          <span className="text-sm text-muted-foreground">({automationDetails.reviews_count})</span>
                         </div>
                         
                         <Badge variant="outline" className="text-xs">
-                          {automation.automation_category}
+                          {automationDetails.category[0]}
                         </Badge>
                       </div>
 
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {automation.automation_tags.map((tag, index) => (
+                        {automationDetails.platforms.slice(0, 3).map((platform, index) => (
                           <Badge key={index} variant="secondary" className="text-xs">
-                            {tag}
+                            {platform}
                           </Badge>
                         ))}
                       </div>
@@ -265,17 +291,17 @@ export function AutomationList() {
                   <div className="grid grid-cols-4 gap-4 mt-6 pt-4 border-t border-border">
                     <div>
                       <p className="text-xs text-muted-foreground">Your Cost</p>
-                      <p className="font-semibold">${automation.automation_cost}</p>
+                      <p className="font-semibold">${automationDetails.cost}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Suggested Price</p>
-                      <p className="font-semibold">${automation.automation_suggested_price}</p>
+                      <p className="font-semibold">${automationDetails.suggested_price}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Profit</p>
                       <p className="font-semibold text-success flex items-center gap-1">
                         <TrendingUp className="w-3 h-3" />
-                        ${automation.automation_profit}
+                        ${automationDetails.profit}
                       </p>
                     </div>
                     <div>

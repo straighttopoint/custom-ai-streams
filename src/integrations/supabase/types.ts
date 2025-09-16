@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      automations: {
+        Row: {
+          category: string[]
+          complexity: string | null
+          cost: number
+          created_at: string
+          description: string | null
+          features: string[]
+          id: string
+          margin: number
+          media: Json | null
+          platforms: string[]
+          profit: number
+          rating: number
+          requirements: string[]
+          reviews_count: number
+          setup_time: string | null
+          status: string
+          suggested_price: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string[]
+          complexity?: string | null
+          cost?: number
+          created_at?: string
+          description?: string | null
+          features?: string[]
+          id?: string
+          margin?: number
+          media?: Json | null
+          platforms?: string[]
+          profit?: number
+          rating?: number
+          requirements?: string[]
+          reviews_count?: number
+          setup_time?: string | null
+          status?: string
+          suggested_price?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string[]
+          complexity?: string | null
+          cost?: number
+          created_at?: string
+          description?: string | null
+          features?: string[]
+          id?: string
+          margin?: number
+          media?: Json | null
+          platforms?: string[]
+          profit?: number
+          rating?: number
+          requirements?: string[]
+          reviews_count?: number
+          setup_time?: string | null
+          status?: string
+          suggested_price?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       custom_requests: {
         Row: {
           admin_notes: string | null
@@ -304,16 +370,7 @@ export type Database = {
       user_automations: {
         Row: {
           added_at: string
-          automation_category: string | null
-          automation_cost: number
-          automation_description: string | null
           automation_id: string
-          automation_profit: number
-          automation_rating: number | null
-          automation_reviews: number | null
-          automation_suggested_price: number
-          automation_tags: string[] | null
-          automation_title: string
           id: string
           is_active: boolean
           updated_at: string
@@ -321,16 +378,7 @@ export type Database = {
         }
         Insert: {
           added_at?: string
-          automation_category?: string | null
-          automation_cost?: number
-          automation_description?: string | null
           automation_id: string
-          automation_profit?: number
-          automation_rating?: number | null
-          automation_reviews?: number | null
-          automation_suggested_price?: number
-          automation_tags?: string[] | null
-          automation_title: string
           id?: string
           is_active?: boolean
           updated_at?: string
@@ -338,22 +386,21 @@ export type Database = {
         }
         Update: {
           added_at?: string
-          automation_category?: string | null
-          automation_cost?: number
-          automation_description?: string | null
           automation_id?: string
-          automation_profit?: number
-          automation_rating?: number | null
-          automation_reviews?: number | null
-          automation_suggested_price?: number
-          automation_tags?: string[] | null
-          automation_title?: string
           id?: string
           is_active?: boolean
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_user_automations_automation_id"
+            columns: ["automation_id"]
+            isOneToOne: false
+            referencedRelation: "automations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wallets: {
         Row: {
