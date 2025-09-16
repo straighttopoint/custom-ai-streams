@@ -183,10 +183,10 @@ export default function AutomationDetails() {
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
+      <div className="container mx-auto px-6 py-8 h-[calc(100vh-80px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
+          {/* Main Content - Scrollable */}
+          <div className="lg:col-span-2 overflow-y-auto pr-4 space-y-8">
             {/* Header Section */}
             <div>
               <div className="flex items-start justify-between gap-4 mb-4">
@@ -339,10 +339,10 @@ export default function AutomationDetails() {
             </Tabs>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
+          {/* Sidebar - Fixed */}
+          <div className="lg:h-full lg:sticky lg:top-6 space-y-6 overflow-y-auto">
             {/* Pricing Card */}
-            <Card className="sticky top-24">
+            <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-primary" />
