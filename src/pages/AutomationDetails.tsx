@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 import { 
   ArrowLeft, 
   Star, 
@@ -19,64 +22,126 @@ import {
   Zap
 } from "lucide-react";
 
-// Extended mock data for automation details
-const automationDetails = {
-  "1": {
-    id: "1",
-    title: "Social Media Content Calendar",
-    description: "Automatically generate and schedule social media posts across multiple platforms with AI-generated content and optimal timing.",
-    fullDescription: `This comprehensive social media automation system revolutionizes how businesses manage their online presence. Built with advanced AI capabilities, it creates, schedules, and optimizes content across multiple platforms including Instagram, LinkedIn, Twitter, and Facebook.
-
-The system analyzes your brand voice, target audience, and industry trends to generate engaging content that resonates with your followers. It automatically determines the best posting times based on audience activity patterns and platform algorithms.
-
-Key features include:
-• AI-powered content generation with brand voice consistency
-• Multi-platform scheduling and cross-posting
-• Hashtag optimization and trend analysis
-• Performance tracking and analytics
-• Automated engagement responses
-• Content calendar management
-• Brand safety and compliance checks`,
-    category: "Social Media Management",
-    rating: 4.8,
-    reviews: 124,
-    cost: 150,
-    suggestedPrice: 500,
-    profit: 350,
-    tags: ["Instagram", "LinkedIn", "Twitter", "AI Content"],
-    isActive: true,
-    setupTime: "2-3 hours",
-    complexity: "Medium",
-    features: [
-      "AI Content Generation",
-      "Multi-Platform Scheduling",
-      "Performance Analytics",
-      "Hashtag Optimization",
-      "Automated Engagement",
-      "Brand Voice Training"
-    ],
-    videoDemo: "https://player.vimeo.com/video/example",
-    images: [
-      "/placeholder.svg",
-      "/placeholder.svg",
-      "/placeholder.svg"
-    ],
-    requirements: [
-      "Social media platform API access",
-      "Content approval workflow setup",
-      "Brand guidelines documentation",
-      "Target audience personas"
-    ]
-  }
-  // Add more automation details as needed
+type Automation = {
+  id: string;
+  title: string;
+  description: string;
+  category: string[];
+  platforms: string[];
+  setup_time: string;
+  complexity: string;
+  reviews_count: number;
+  rating: number;
+  cost: number;
+  suggested_price: number;
+  profit: number;
+  margin: number;
+  features: string[];
+  requirements: string[];
+  media: any;
+  status: string;
+  created_at: string;
+  updated_at: string;
 };
 
 export default function AutomationDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [automation, setAutomation] = useState<Automation | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isInUserList, setIsInUserList] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+
+  useEffect(() => {
+    if (id) {
+      fetchAutomation();
+      if (user) {
+        checkIfInUserList();
+      }
+    }
+  }, [id, user]);
+
+  const fetchAutomation = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('automations')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      setAutomation(data);
+    } catch (error) {
+      console.error('Error fetching automation:', error);
+      toast.error("Failed to load automation details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkIfInUserList = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_automations')
+        .select('id')
+        .eq('user_id', user?.id)
+        .eq('automation_id', id)
+        .single();
+
+      if (!error && data) {
+        setIsInUserList(true);
+      }
+    } catch (error) {
+      // User doesn't have this automation, which is fine
+    }
+  };
+
+  const handleAddToList = async () => {
+    if (!user || !automation) {
+      toast.error("Please log in to add automations to your list");
+      return;
+    }
+
+    setIsAdding(true);
+    try {
+      const { error } = await supabase
+        .from('user_automations')
+        .insert({
+          user_id: user.id,
+          automation_id: automation.id,
+          is_active: automation.status === 'Active'
+        });
+
+      if (error) {
+        if (error.code === '23505') {
+          toast.error("This automation is already in your list");
+        } else {
+          throw error;
+        }
+      } else {
+        setIsInUserList(true);
+        toast.success(`${automation.title} added to your automation list!`);
+      }
+    } catch (error) {
+      console.error('Error adding automation:', error);
+      toast.error("Failed to add automation to your list");
+    } finally {
+      setIsAdding(false);
+    }
+  };
   
-  const automation = automationDetails[id as keyof typeof automationDetails];
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Bot className="w-16 h-16 text-muted-foreground mx-auto mb-4 animate-pulse" />
+          <p className="text-muted-foreground">Loading automation details...</p>
+        </div>
+      </div>
+    );
+  }
   
   if (!automation) {
     return (
@@ -92,7 +157,7 @@ export default function AutomationDetails() {
     );
   }
 
-  const profitMargin = ((automation.profit / automation.suggestedPrice) * 100).toFixed(1);
+  const profitMargin = ((automation.profit / automation.suggested_price) * 100).toFixed(1);
 
   return (
     <div className="max-h-screen bg-background overflow-auto">
@@ -129,8 +194,8 @@ export default function AutomationDetails() {
                   <h1 className="text-3xl font-bold mb-2">{automation.title}</h1>
                   <p className="text-lg text-muted-foreground">{automation.description}</p>
                 </div>
-                <Badge variant={automation.isActive ? "default" : "secondary"} className="bg-success text-success-foreground">
-                  {automation.isActive ? "Active" : "Draft"}
+                <Badge variant={automation.status === 'Active' ? "default" : "secondary"} className="bg-success text-success-foreground">
+                  {automation.status}
                 </Badge>
               </div>
 
@@ -138,19 +203,19 @@ export default function AutomationDetails() {
                 <div className="flex items-center gap-2">
                   <Star className="w-5 h-5 fill-warning text-warning" />
                   <span className="font-medium">{automation.rating}</span>
-                  <span className="text-muted-foreground">({automation.reviews} reviews)</span>
+                  <span className="text-muted-foreground">({automation.reviews_count} reviews)</span>
                 </div>
-                <Badge variant="outline">{automation.category}</Badge>
+                <Badge variant="outline">{automation.category[0]}</Badge>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Clock className="w-4 h-4" />
-                  {automation.setupTime} setup
+                  {automation.setup_time} setup
                 </div>
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {automation.tags.map((tag, index) => (
+                {automation.platforms.map((platform, index) => (
                   <Badge key={index} variant="secondary" className="text-sm">
-                    {tag}
+                    {platform}
                   </Badge>
                 ))}
               </div>
@@ -180,7 +245,7 @@ export default function AutomationDetails() {
                 <div>
                   <h4 className="font-medium mb-3">Screenshots</h4>
                   <div className="grid grid-cols-3 gap-3">
-                    {automation.images.map((image, index) => (
+                    {automation.media?.screenshots ? automation.media.screenshots.map((image: string, index: number) => (
                       <AspectRatio 
                         key={index} 
                         ratio={4 / 3} 
@@ -193,7 +258,11 @@ export default function AutomationDetails() {
                           className="w-full h-full object-cover"
                         />
                       </AspectRatio>
-                    ))}
+                    )) : (
+                      <div className="col-span-3 text-center py-8">
+                        <p className="text-muted-foreground">No screenshots available</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -214,11 +283,19 @@ export default function AutomationDetails() {
                   </CardHeader>
                   <CardContent>
                     <div className="prose prose-sm max-w-none">
-                      {automation.fullDescription.split('\n\n').map((paragraph, index) => (
-                        <p key={index} className="mb-4 text-muted-foreground leading-relaxed">
-                          {paragraph}
-                        </p>
-                      ))}
+                      <p className="mb-4 text-muted-foreground leading-relaxed">
+                        {automation.description}
+                      </p>
+                      <div className="mt-6">
+                        <h4 className="font-medium mb-3">Platforms Supported:</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {automation.platforms.map((platform, index) => (
+                            <Badge key={index} variant="outline" className="text-sm">
+                              {platform}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -280,7 +357,7 @@ export default function AutomationDetails() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Suggested Price</p>
-                    <p className="text-2xl font-bold">${automation.suggestedPrice}</p>
+                    <p className="text-2xl font-bold">${automation.suggested_price}</p>
                   </div>
                 </div>
 
@@ -298,9 +375,28 @@ export default function AutomationDetails() {
                   </div>
                 </div>
 
-                <Button className="w-full" size="lg">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add to My List
+                <Button 
+                  className="w-full" 
+                  size="lg"
+                  onClick={handleAddToList}
+                  disabled={isAdding || isInUserList}
+                >
+                  {isAdding ? (
+                    <>
+                      <Plus className="w-4 h-4 mr-2 animate-spin" />
+                      Adding...
+                    </>
+                  ) : isInUserList ? (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Already in Your List
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add to My List
+                    </>
+                  )}
                 </Button>
               </CardContent>
             </Card>
@@ -317,13 +413,13 @@ export default function AutomationDetails() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Setup Time</span>
-                  <span className="text-sm font-medium">{automation.setupTime}</span>
+                  <span className="text-sm font-medium">{automation.setup_time}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Reviews</span>
                   <span className="text-sm font-medium flex items-center gap-1">
                     <Users className="w-3 h-3" />
-                    {automation.reviews}
+                    {automation.reviews_count}
                   </span>
                 </div>
               </CardContent>
