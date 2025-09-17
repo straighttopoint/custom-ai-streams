@@ -370,6 +370,9 @@ export default function NewOrder() {
     }
   };
 
+  // Get selected automation details for display
+  const selectedAutomation = userAutomations.find(ua => ua.automation_id === form.watch("automationId"))?.automations;
+
   useEffect(() => {
     fetchUserAutomations();
   }, [user]);
@@ -406,8 +409,10 @@ export default function NewOrder() {
     setIsSubmitting(true);
     
     try {
-      // Get automation details
-      const selectedAutomation = userAutomations.find(auto => auto.automation_id === data.automationId);
+      // Get automation details from the selected automation
+      const selectedUserAutomation = userAutomations.find(auto => auto.automation_id === data.automationId);
+      const automationDetails = selectedUserAutomation?.automations;
+      
       
       // Format the full phone number
       const fullPhoneNumber = `${data.countryCode} ${data.clientPhone}`;
@@ -431,9 +436,9 @@ export default function NewOrder() {
           twitter_handle: data.twitterHandle || null,
           linkedin_profile: data.linkedinProfile || null,
           automation_id: data.automationId,
-          automation_title: selectedAutomation?.automation_title || 'Unknown Automation',
-          automation_price: `$${selectedAutomation?.automation_suggested_price || 0}`,
-          automation_category: selectedAutomation?.automation_category || null,
+          automation_title: automationDetails?.title || 'Unknown Automation',
+          automation_price: `$${automationDetails?.suggested_price || 0}`,
+          automation_category: automationDetails?.category?.[0] || null,
           project_description: data.projectDescription,
           special_requirements: data.specialRequirements || null,
           meeting_date: format(data.meetingDate, 'PPP p'),
@@ -460,9 +465,6 @@ export default function NewOrder() {
     }
   };
 
-  const selectedAutomation = userAutomations.find(
-    automation => automation.automation_id === form.watch("automationId")
-  );
 
   const selectedCountry = countryCodes.find(c => c.code === form.watch("countryCode"));
   const selectedCountryKey = form.watch("countryCode") ? `${form.watch("countryCode")}-${selectedCountry?.country}` : "";
@@ -746,19 +748,19 @@ export default function NewOrder() {
                           <SelectValue placeholder="Choose from your automation list" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        {userAutomations.map((automation) => (
-                          <SelectItem key={automation.automation_id} value={automation.automation_id}>
-                            <div className="flex items-center justify-between w-full">
-                              <span>{automation.automation_title}</span>
-                              <div className="flex items-center gap-2 ml-4">
-                                <Badge variant="secondary">{automation.automation_category}</Badge>
-                                <span className="font-semibold text-primary">${automation.automation_suggested_price}</span>
-                              </div>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
+                       <SelectContent>
+                         {userAutomations.map((userAutomation) => (
+                           <SelectItem key={userAutomation.id} value={userAutomation.automation_id}>
+                             <div className="flex items-center justify-between w-full">
+                               <span>{userAutomation.automations?.title || 'Automation'}</span>
+                               <div className="flex items-center gap-2 ml-4">
+                                 <Badge variant="secondary">{userAutomation.automations?.category?.[0] || 'General'}</Badge>
+                                 <span className="font-semibold text-primary">${userAutomation.automations?.suggested_price || '0'}</span>
+                               </div>
+                             </div>
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
@@ -770,10 +772,10 @@ export default function NewOrder() {
                   <h4 className="font-semibold mb-2">Selected Automation:</h4>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">{selectedAutomation.automation_title}</p>
-                      <Badge variant="secondary">{selectedAutomation.automation_category}</Badge>
+                      <p className="font-medium">{selectedAutomation.title}</p>
+                      <Badge variant="secondary">{selectedAutomation.category?.[0] || 'General'}</Badge>
                     </div>
-                    <span className="text-lg font-bold text-primary">${selectedAutomation.automation_suggested_price}</span>
+                    <span className="text-lg font-bold text-primary">${selectedAutomation.suggested_price}</span>
                   </div>
                 </div>
               )}
