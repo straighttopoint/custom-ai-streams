@@ -7,14 +7,35 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
+import { useSecureForm } from "@/hooks/useSecureForm";
+import { validatePassword } from "@/lib/security";
 
 const Auth = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
   const navigate = useNavigate();
   const { signIn, signUp, signInWithGoogle, user } = useAuth();
+  
+  const signInForm = useSecureForm(
+    { email: '', password: '' },
+    {
+      email: { required: true },
+      password: { required: true }
+    }
+  );
+  
+  const signUpForm = useSecureForm(
+    { email: '', password: '', fullName: '' },
+    {
+      email: { required: true },
+      password: { 
+        required: true,
+        validator: (value: string) => {
+          const validation = validatePassword(value);
+          return validation.isValid ? null : validation.errors[0];
+        }
+      },
+      fullName: { required: true }
+    }
+  );
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -25,30 +46,48 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    const { error } = await signIn(email, password);
+    if (!signInForm.validateAllFields()) {
+      return;
+    }
+    
+    signInForm.setIsSubmitting(true);
+    const values = signInForm.getValues();
+    
+    const { error } = await signIn(values.email, values.password);
     
     if (!error) {
       navigate("/dashboard");
     }
     
-    setIsLoading(false);
+    signInForm.setIsSubmitting(false);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    const { error } = await signUp(email, password, fullName);
+    if (!signUpForm.validateAllFields()) {
+      return;
+    }
     
-    setIsLoading(false);
+    signUpForm.setIsSubmitting(true);
+    const values = signUpForm.getValues();
+    
+    const { error } = await signUp(values.email, values.password, values.fullName);
+    
+    if (!error) {
+      signUpForm.reset();
+    }
+    
+    signUpForm.setIsSubmitting(false);
   };
 
   const handleGoogleSignIn = async () => {
-    setIsLoading(true);
+    signInForm.setIsSubmitting(true);
+    signUpForm.setIsSubmitting(true);
     await signInWithGoogle();
-    setIsLoading(false);
+    signInForm.setIsSubmitting(false);
+    signUpForm.setIsSubmitting(false);
   };
 
   return (
@@ -69,16 +108,18 @@ const Auth = () => {
             
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
+                <input type="hidden" name="csrf_token" value={signInForm.csrfToken} />
                 <div className="space-y-2">
                   <Label htmlFor="signin-email">Email</Label>
                   <Input
                     id="signin-email"
                     type="email"
                     placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+                    {...signInForm.getFieldProps('email')}
                   />
+                  {signInForm.fields.email.error && (
+                    <p className="text-sm text-destructive">{signInForm.fields.email.error}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signin-password">Password</Label>
@@ -86,17 +127,18 @@ const Auth = () => {
                     id="signin-password"
                     type="password"
                     placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
+                    {...signInForm.getFieldProps('password')}
                   />
+                  {signInForm.fields.password.error && (
+                    <p className="text-sm text-destructive">{signInForm.fields.password.error}</p>
+                  )}
                 </div>
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={isLoading}
+                  disabled={signInForm.isSubmitting || signInForm.hasErrors}
                 >
-                  {isLoading ? "Signing In..." : "Sign In"}
+                  {signInForm.isSubmitting ? "Signing In..." : "Sign In"}
                 </Button>
                 
                 <div className="relative">
@@ -115,7 +157,7 @@ const Auth = () => {
                   variant="outline" 
                   className="w-full" 
                   onClick={handleGoogleSignIn}
-                  disabled={isLoading}
+                  disabled={signInForm.isSubmitting || signUpForm.isSubmitting}
                 >
                   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                     <path
@@ -142,16 +184,18 @@ const Auth = () => {
             
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
+                <input type="hidden" name="csrf_token" value={signUpForm.csrfToken} />
                 <div className="space-y-2">
                   <Label htmlFor="signup-name">Full Name</Label>
                   <Input
                     id="signup-name"
                     type="text"
                     placeholder="Enter your full name"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
+                    {...signUpForm.getFieldProps('fullName')}
                   />
+                  {signUpForm.fields.fullName.error && (
+                    <p className="text-sm text-destructive">{signUpForm.fields.fullName.error}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
@@ -159,10 +203,11 @@ const Auth = () => {
                     id="signup-email"
                     type="email"
                     placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+                    {...signUpForm.getFieldProps('email')}
                   />
+                  {signUpForm.fields.email.error && (
+                    <p className="text-sm text-destructive">{signUpForm.fields.email.error}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Password</Label>
@@ -170,17 +215,21 @@ const Auth = () => {
                     id="signup-password"
                     type="password"
                     placeholder="Create a password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
+                    {...signUpForm.getFieldProps('password')}
                   />
+                  {signUpForm.fields.password.error && (
+                    <div className="text-sm text-destructive">{signUpForm.fields.password.error}</div>
+                  )}
+                  <div className="text-xs text-muted-foreground">
+                    Password must contain at least 8 characters, including uppercase, lowercase, number, and special character.
+                  </div>
                 </div>
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={isLoading}
+                  disabled={signUpForm.isSubmitting || signUpForm.hasErrors}
                 >
-                  {isLoading ? "Creating Account..." : "Sign Up"}
+                  {signUpForm.isSubmitting ? "Creating Account..." : "Sign Up"}
                 </Button>
                 
                 <div className="relative">
@@ -199,7 +248,7 @@ const Auth = () => {
                   variant="outline" 
                   className="w-full" 
                   onClick={handleGoogleSignIn}
-                  disabled={isLoading}
+                  disabled={signInForm.isSubmitting || signUpForm.isSubmitting}
                 >
                   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                     <path
