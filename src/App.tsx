@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { AuthProvider } from "@/hooks/useAuth";
 import { WalletProvider } from "@/hooks/useWallet";
-
+import { SecurityProvider } from "@/components/SecurityProvider";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
@@ -22,9 +22,10 @@ const App = () => (
   <>
       <Toaster />
       <Sonner />
-      <AuthProvider>
-        <WalletProvider>
-          <BrowserRouter>
+      <SecurityProvider>
+        <AuthProvider>
+          <WalletProvider>
+            <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
@@ -39,9 +40,10 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
-        </WalletProvider>
-      </AuthProvider>
+            </BrowserRouter>
+          </WalletProvider>
+        </AuthProvider>
+      </SecurityProvider>
   </>
 );
 

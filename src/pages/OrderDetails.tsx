@@ -103,226 +103,228 @@ export default function OrderDetails() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-4 mb-6">
-        <Button 
-          variant="outline" 
-          onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Orders
-        </Button>
-      </div>
-
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-3xl font-bold">Order #{order.id.slice(-8)}</h1>
-            {getStatusBadge(order.status)}
-          </div>
+    <div className="min-h-screen bg-background overflow-y-auto">
+      <div className="max-w-6xl mx-auto p-6 space-y-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Orders
+          </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Client Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  Client Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Name</p>
-                    <p className="font-medium">{order.client_name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Email</p>
-                    <p className="font-medium">{order.client_email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Phone</p>
-                    <p className="font-medium">{order.client_phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Company</p>
-                    <p className="font-medium">{order.company_name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Industry</p>
-                    <p className="font-medium">{order.industry}</p>
-                  </div>
-                  {order.website_url && (
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Website</p>
-                      <p className="font-medium">{order.website_url}</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Automation Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Automation Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Automation Type</p>
-                  <p className="font-medium">{order.automation_title}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Category</p>
-                  <p className="font-medium">{order.automation_category || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Agreed Price</p>
-                  <p className="font-medium text-lg">{order.agreed_price}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Payment Format</p>
-                  <p className="font-medium capitalize">{order.payment_format}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Project Description</p>
-                  <p className="text-sm">{order.project_description}</p>
-                </div>
-                {order.special_requirements && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Special Requirements</p>
-                    <p className="text-sm">{order.special_requirements}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Social Media Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5" />
-                  Social Media Accounts
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {[
-                  { platform: 'Instagram', handle: order.instagram_handle },
-                  { platform: 'Facebook', handle: order.facebook_page },
-                  { platform: 'Twitter', handle: order.twitter_handle },
-                  { platform: 'LinkedIn', handle: order.linkedin_profile }
-                ].filter(item => item.handle).map((platform, index) => (
-                  <div key={index} className="flex justify-between items-center p-2 bg-muted rounded">
-                    <span className="font-medium">{platform.platform}</span>
-                    <span className="text-sm text-muted-foreground">{platform.handle}</span>
-                  </div>
-                ))}
-                {![order.instagram_handle, order.facebook_page, order.twitter_handle, order.linkedin_profile].some(Boolean) && (
-                  <p className="text-sm text-muted-foreground">No social media accounts provided</p>
-                )}
-              </CardContent>
-            </Card>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-3xl font-bold">Order #{order.id.slice(-8)}</h1>
+              {getStatusBadge(order.status)}
+            </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Order Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="w-5 h-5" />
-                  Order Summary
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Client Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="w-5 h-5" />
+                    Client Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Name</p>
+                      <p className="font-medium">{order.client_name}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Email</p>
+                      <p className="font-medium">{order.client_email}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Phone</p>
+                      <p className="font-medium">{order.client_phone}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Company</p>
+                      <p className="font-medium">{order.company_name}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Industry</p>
+                      <p className="font-medium">{order.industry}</p>
+                    </div>
+                    {order.website_url && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Website</p>
+                        <p className="font-medium">{order.website_url}</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Automation Details */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Automation Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Order Value</p>
+                    <p className="text-sm font-medium text-muted-foreground">Automation Type</p>
+                    <p className="font-medium">{order.automation_title}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Category</p>
+                    <p className="font-medium">{order.automation_category || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Agreed Price</p>
                     <p className="font-medium text-lg">{order.agreed_price}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Payment Format</p>
-                    <Badge variant="outline" className="capitalize">{order.payment_format}</Badge>
+                    <p className="font-medium capitalize">{order.payment_format}</p>
                   </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Automation Type</p>
-                  <p className="font-medium">{order.automation_title}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Current Status</p>
-                  {getStatusBadge(order.status)}
-                </div>
-              </CardContent>
-            </Card>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Project Description</p>
+                    <p className="text-sm">{order.project_description}</p>
+                  </div>
+                  {order.special_requirements && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Special Requirements</p>
+                      <p className="text-sm">{order.special_requirements}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-            {/* Important Dates */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  Important Dates
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Order Created</p>
-                    <p className="font-medium">{new Date(order.created_at).toLocaleDateString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Last Updated</p>
-                    <p className="font-medium">{new Date(order.updated_at).toLocaleDateString()}</p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Meeting Scheduled</p>
-                  <p className="font-medium">{order.meeting_date}</p>
-                </div>
-                {order.estimated_completion_date && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Estimated Completion</p>
-                    <p className="font-medium">{new Date(order.estimated_completion_date).toLocaleDateString()}</p>
-                  </div>
-                )}
-                {order.actual_completion_date && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Actual Completion</p>
-                    <p className="font-medium">{new Date(order.actual_completion_date).toLocaleDateString()}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+              {/* Social Media Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5" />
+                    Social Media Accounts
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {[
+                    { platform: 'Instagram', handle: order.instagram_handle },
+                    { platform: 'Facebook', handle: order.facebook_page },
+                    { platform: 'Twitter', handle: order.twitter_handle },
+                    { platform: 'LinkedIn', handle: order.linkedin_profile }
+                  ].filter(item => item.handle).map((platform, index) => (
+                    <div key={index} className="flex justify-between items-center p-2 bg-muted rounded">
+                      <span className="font-medium">{platform.platform}</span>
+                      <span className="text-sm text-muted-foreground">{platform.handle}</span>
+                    </div>
+                  ))}
+                  {![order.instagram_handle, order.facebook_page, order.twitter_handle, order.linkedin_profile].some(Boolean) && (
+                    <p className="text-sm text-muted-foreground">No social media accounts provided</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
 
-            {/* Order Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="w-5 h-5" />
-                  Order Status
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0">
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Order Summary */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CreditCard className="w-5 h-5" />
+                    Order Summary
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Order Value</p>
+                      <p className="font-medium text-lg">{order.agreed_price}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Payment Format</p>
+                      <Badge variant="outline" className="capitalize">{order.payment_format}</Badge>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Automation Type</p>
+                    <p className="font-medium">{order.automation_title}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Current Status</p>
                     {getStatusBadge(order.status)}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">Current Status</p>
-                    <p className="text-xs text-muted-foreground">Last updated: {new Date(order.updated_at).toLocaleDateString()}</p>
-                    {order.admin_notes && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        <strong>Admin Notes:</strong> {order.admin_notes}
-                      </p>
-                    )}
+                </CardContent>
+              </Card>
+
+              {/* Important Dates */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    Important Dates
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Order Created</p>
+                      <p className="font-medium">{new Date(order.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Last Updated</p>
+                      <p className="font-medium">{new Date(order.updated_at).toLocaleDateString()}</p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Meeting Scheduled</p>
+                    <p className="font-medium">{order.meeting_date}</p>
+                  </div>
+                  {order.estimated_completion_date && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Estimated Completion</p>
+                      <p className="font-medium">{new Date(order.estimated_completion_date).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                  {order.actual_completion_date && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Actual Completion</p>
+                      <p className="font-medium">{new Date(order.actual_completion_date).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Order Status */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="w-5 h-5" />
+                    Order Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0">
+                      {getStatusBadge(order.status)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium">Current Status</p>
+                      <p className="text-xs text-muted-foreground">Last updated: {new Date(order.updated_at).toLocaleDateString()}</p>
+                      {order.admin_notes && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          <strong>Admin Notes:</strong> {order.admin_notes}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>

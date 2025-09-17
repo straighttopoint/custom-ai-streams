@@ -326,17 +326,42 @@ export default function NewOrder() {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
+      setLoadingAutomations(true);
+      
+      // First get user automations
+      const { data: userAutomationsData, error: userAutomationsError } = await supabase
         .from('user_automations')
-        .select('*')
+        .select('id, automation_id')
         .eq('user_id', user.id)
         .eq('is_active', true);
 
-      if (error) {
-        throw error;
+      if (userAutomationsError) {
+        throw userAutomationsError;
       }
 
-      setUserAutomations(data || []);
+      if (!userAutomationsData || userAutomationsData.length === 0) {
+        setUserAutomations([]);
+        return;
+      }
+
+      // Get automation details
+      const automationIds = userAutomationsData.map(ua => ua.automation_id);
+      const { data: automationsData, error: automationsError } = await supabase
+        .from('automations')
+        .select('*')
+        .in('id', automationIds);
+
+      if (automationsError) {
+        throw automationsError;
+      }
+
+      // Combine the data
+      const combinedData = userAutomationsData.map(userAutomation => ({
+        ...userAutomation,
+        automations: automationsData?.find(automation => automation.id === userAutomation.automation_id) || null
+      }));
+
+      setUserAutomations(combinedData || []);
     } catch (error) {
       console.error('Error fetching user automations:', error);
       toast.error("Failed to load your automations");
