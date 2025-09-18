@@ -47,8 +47,10 @@ export default function TransactionHistory() {
   const getTransactionIcon = (type: string) => {
     switch (type) {
       case 'deposit':
+      case 'order_payment':
         return <ArrowDownLeft className="h-4 w-4 text-success" />;
       case 'withdrawal':
+      case 'fee_deduction':
         return <ArrowUpRight className="h-4 w-4 text-destructive" />;
       case 'client_payment':
         return <ArrowDownLeft className="h-4 w-4 text-success" />;
@@ -89,6 +91,10 @@ export default function TransactionHistory() {
         return 'Deposit';
       case 'withdrawal':
         return 'Withdrawal';
+      case 'fee_deduction':
+        return 'Order Fee';
+      case 'order_payment':
+        return 'Order Payment';
       case 'meeting_fee':
         return 'Meeting Fee';
       case 'setup_fee':
