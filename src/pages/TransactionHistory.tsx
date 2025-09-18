@@ -72,12 +72,16 @@ export default function TransactionHistory() {
   const getTransactionIcon = (type: string) => {
     switch (type) {
       case 'deposit':
-      case 'order_payment':
+        return <ArrowDownLeft className="h-4 w-4 text-success" />;
+      case 'payment':
         return <ArrowDownLeft className="h-4 w-4 text-success" />;
       case 'withdrawal':
-      case 'fee_deduction':
         return <ArrowUpRight className="h-4 w-4 text-destructive" />;
-      case 'client_payment':
+      case 'fee':
+        return <ArrowUpRight className="h-4 w-4 text-destructive" />;
+      case 'refund':
+        return <ArrowDownLeft className="h-4 w-4 text-success" />;
+      case 'commission':
         return <ArrowDownLeft className="h-4 w-4 text-success" />;
       default:
         return <ArrowUpRight className="h-4 w-4 text-muted-foreground" />;
@@ -116,22 +120,14 @@ export default function TransactionHistory() {
         return 'Deposit';
       case 'withdrawal':
         return 'Withdrawal';
-      case 'fee_deduction':
-        return 'Order Fee';
-      case 'order_payment':
-        return 'Order Payment';
-      case 'meeting_fee':
-        return 'Meeting Fee';
-      case 'setup_fee':
-        return 'Setup Fee';
-      case 'client_payment':
-        return 'Client Payment';
-      case 'automation_fee':
-        return 'Automation Fee';
-      case 'dropservicing_fee':
+      case 'fee':
         return 'Service Fee';
-      case 'followup_fee':
-        return 'Follow-up Fee';
+      case 'payment':
+        return 'Order Payment';
+      case 'refund':
+        return 'Refund';
+      case 'commission':
+        return 'Commission';
       default:
         return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
