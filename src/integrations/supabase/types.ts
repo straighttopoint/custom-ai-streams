@@ -500,6 +500,10 @@ export type Database = {
         Args: { p_amount: number; p_description?: string; p_user_id: string }
         Returns: boolean
       }
+      process_automatic_order_completion: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       update_order_transaction_statuses: {
         Args: { p_order_id: string; p_order_status: string }
         Returns: boolean

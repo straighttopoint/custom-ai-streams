@@ -27,6 +27,31 @@ export default function TransactionHistory() {
     }
   }, [user]);
 
+  // Set up real-time listener for user transactions
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('user-transactions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          fetchTransactions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const fetchTransactions = async () => {
     try {
       const { data, error } = await supabase
@@ -103,6 +128,10 @@ export default function TransactionHistory() {
         return 'Client Payment';
       case 'automation_fee':
         return 'Automation Fee';
+      case 'dropservicing_fee':
+        return 'Service Fee';
+      case 'followup_fee':
+        return 'Follow-up Fee';
       default:
         return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
     }

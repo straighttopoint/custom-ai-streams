@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { DollarSign, TrendingUp, TrendingDown, Clock, CheckCircle } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, Clock, CheckCircle, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useWallet } from "@/hooks/useWallet";
 
 interface OrderTransaction {
   id: string;
@@ -35,10 +36,35 @@ export default function OrderTransactions({
 }: OrderTransactionsProps) {
   const [transactions, setTransactions] = useState<OrderTransaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const { refreshWallet } = useWallet();
 
   useEffect(() => {
     fetchTransactions();
   }, [orderId, orderStatus]);
+
+  // Set up real-time listener for order transactions
+  useEffect(() => {
+    const channel = supabase
+      .channel('order-transactions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'order_transactions',
+          filter: `order_id=eq.${orderId}`
+        },
+        () => {
+          fetchTransactions();
+          refreshWallet(); // Refresh wallet when transactions change
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orderId, refreshWallet]);
 
   const fetchTransactions = async () => {
     try {
@@ -96,7 +122,7 @@ export default function OrderTransactions({
     const statusConfig = {
       pending: { variant: 'secondary' as const, icon: <Clock className="w-3 h-3" /> },
       completed: { variant: 'default' as const, icon: <CheckCircle className="w-3 h-3" /> },
-      cancelled: { variant: 'destructive' as const, icon: null }
+      cancelled: { variant: 'destructive' as const, icon: <XCircle className="w-3 h-3" /> }
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
