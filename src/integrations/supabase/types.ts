@@ -381,6 +381,7 @@ export type Database = {
           id: string
           order_id: string | null
           status: string
+          transaction_type: string | null
           type: string
           updated_at: string
           user_id: string
@@ -392,6 +393,7 @@ export type Database = {
           id?: string
           order_id?: string | null
           status?: string
+          transaction_type?: string | null
           type: string
           updated_at?: string
           user_id: string
@@ -403,6 +405,7 @@ export type Database = {
           id?: string
           order_id?: string | null
           status?: string
+          transaction_type?: string | null
           type?: string
           updated_at?: string
           user_id?: string
