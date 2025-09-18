@@ -445,7 +445,7 @@ export default function NewOrder() {
           meeting_date: format(data.meetingDate, 'PPP p'),
           payment_format: data.paymentFormat,
           agreed_price: formattedPrice,
-          status: 'order_created'
+          status: 'under_review'
         });
 
       if (error) {
@@ -567,19 +567,19 @@ export default function NewOrder() {
                                 <SelectValue placeholder="Country" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="max-h-60">
-                              {countryCodes.map((country) => (
-                                <SelectItem 
-                                  key={`${country.code}-${country.countryCode}-${country.country}`} 
-                                  value={country.code}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <span>{country.flag}</span>
-                                    <span className="text-xs">{country.code}</span>
-                                    <span className="text-xs truncate max-w-[120px]">{country.country}</span>
-                                  </div>
-                                </SelectItem>
-                              ))}
+                             <SelectContent className="max-h-60">
+                               {countryCodes.map((country, index) => (
+                                 <SelectItem 
+                                   key={`country-${index}-${country.code}`} 
+                                   value={country.code}
+                                 >
+                                   <div className="flex items-center gap-2">
+                                     <span>{country.flag}</span>
+                                     <span className="text-xs">{country.code}</span>
+                                     <span className="text-xs truncate max-w-[120px]">{country.country}</span>
+                                   </div>
+                                 </SelectItem>
+                               ))}
                             </SelectContent>
                           </Select>
                           <FormMessage />
