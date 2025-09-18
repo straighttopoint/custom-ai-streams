@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import OrderTransactions from "@/components/OrderTransactions";
+import { FinancialLayout } from "@/components/FinancialLayout";
 
 const getStatusBadge = (status: string) => {
   const statusConfig = {
@@ -91,21 +92,23 @@ export default function OrderDetails() {
 
   if (!order) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="text-center space-y-4">
-          <h1 className="text-2xl font-bold">Order Not Found</h1>
-          <p className="text-muted-foreground">The order you're looking for doesn't exist.</p>
-          <Button onClick={() => navigate('/dashboard')}>
-            Return to Dashboard
-          </Button>
+      <FinancialLayout activeTab="orders">
+        <div className="max-w-4xl mx-auto p-6">
+          <div className="text-center space-y-4">
+            <h1 className="text-2xl font-bold">Order Not Found</h1>
+            <p className="text-muted-foreground">The order you're looking for doesn't exist.</p>
+            <Button onClick={() => navigate('/dashboard')}>
+              Return to Dashboard
+            </Button>
+          </div>
         </div>
-      </div>
+      </FinancialLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto p-6 space-y-6 max-h-screen overflow-y-auto">
+    <FinancialLayout activeTab="orders">
+      <div className="max-w-6xl mx-auto p-6 space-y-6">
         <div className="flex items-center gap-4 mb-6">
           <Button 
             variant="outline" 
@@ -339,6 +342,6 @@ export default function OrderDetails() {
           </div>
         </div>
       </div>
-    </div>
+    </FinancialLayout>
   );
 }
