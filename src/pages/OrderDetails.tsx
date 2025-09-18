@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Calendar, CreditCard, User, MessageSquare, Clock } from "lucide-react";
+import { ArrowLeft, Calendar, CreditCard, User, MessageSquare, Clock, Menu } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import OrderTransactions from "@/components/OrderTransactions";
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 const getStatusBadge = (status: string) => {
   const statusConfig = {
@@ -58,6 +59,9 @@ export default function OrderDetails() {
   const { user } = useAuth();
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("orders");
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const fetchOrder = async () => {
     if (!user || !id) return;
@@ -96,15 +100,49 @@ export default function OrderDetails() {
       <div className="min-h-screen bg-background">
         <Header />
         <div className="flex">
-          <Sidebar activeTab="orders" onTabChange={() => {}} isCollapsed={false} onToggleCollapse={() => {}} />
-          <main className="flex-1">
-            <div className="max-w-4xl mx-auto p-6">
-              <div className="text-center space-y-4">
-                <h1 className="text-2xl font-bold">Order Not Found</h1>
-                <p className="text-muted-foreground">The order you're looking for doesn't exist.</p>
-                <Button onClick={() => navigate('/dashboard')}>
-                  Return to Dashboard
-                </Button>
+          {/* Desktop Sidebar */}
+          <div className={`hidden lg:block transition-all duration-300 ${isSidebarCollapsed ? 'w-16' : 'w-64'}`}>
+            <Sidebar 
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              isCollapsed={isSidebarCollapsed}
+              onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            />
+          </div>
+
+          {/* Mobile Sidebar */}
+          <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="lg:hidden fixed top-4 left-4 z-50">
+                <Menu className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-0">
+              <SheetHeader className="p-4">
+                <SheetTitle>Navigation</SheetTitle>
+              </SheetHeader>
+              <Sidebar 
+                activeTab={activeTab}
+                onTabChange={(tab) => {
+                  setActiveTab(tab);
+                  setIsMobileSidebarOpen(false);
+                }}
+                isCollapsed={false}
+                onToggleCollapse={() => {}}
+              />
+            </SheetContent>
+          </Sheet>
+
+          <main className="flex-1 overflow-hidden">
+            <div className="h-screen overflow-y-auto">
+              <div className="max-w-4xl mx-auto p-6">
+                <div className="text-center space-y-4">
+                  <h1 className="text-2xl font-bold">Order Not Found</h1>
+                  <p className="text-muted-foreground">The order you're looking for doesn't exist.</p>
+                  <Button onClick={() => navigate('/dashboard')}>
+                    Return to Dashboard
+                  </Button>
+                </div>
               </div>
             </div>
           </main>
@@ -117,19 +155,52 @@ export default function OrderDetails() {
     <div className="min-h-screen bg-background">
       <Header />
       <div className="flex">
-        <Sidebar activeTab="orders" onTabChange={() => {}} isCollapsed={false} onToggleCollapse={() => {}} />
-        <main className="flex-1">
-          <div className="max-w-6xl mx-auto p-6 space-y-6">
-            <div className="flex items-center gap-4 mb-6">
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/dashboard')}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back to Orders
-              </Button>
-            </div>
+        {/* Desktop Sidebar */}
+        <div className={`hidden lg:block transition-all duration-300 ${isSidebarCollapsed ? 'w-16' : 'w-64'}`}>
+          <Sidebar 
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            isCollapsed={isSidebarCollapsed}
+            onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          />
+        </div>
+
+        {/* Mobile Sidebar */}
+        <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon" className="lg:hidden fixed top-4 left-4 z-50">
+              <Menu className="h-4 w-4" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-64 p-0">
+            <SheetHeader className="p-4">
+              <SheetTitle>Navigation</SheetTitle>
+            </SheetHeader>
+            <Sidebar 
+              activeTab={activeTab}
+              onTabChange={(tab) => {
+                setActiveTab(tab);
+                setIsMobileSidebarOpen(false);
+              }}
+              isCollapsed={false}
+              onToggleCollapse={() => {}}
+            />
+          </SheetContent>
+        </Sheet>
+
+        <main className="flex-1 overflow-hidden">
+          <div className="h-screen overflow-y-auto">
+            <div className="max-w-6xl mx-auto p-6 space-y-6">
+              <div className="flex items-center gap-4 mb-6">
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/dashboard')}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to Orders
+                </Button>
+              </div>
 
             <div className="space-y-6">
               <div className="flex items-center justify-between">
@@ -351,6 +422,7 @@ export default function OrderDetails() {
                   </Card>
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </main>
