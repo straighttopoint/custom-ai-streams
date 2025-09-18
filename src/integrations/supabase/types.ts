@@ -128,6 +128,48 @@ export type Database = {
         }
         Relationships: []
       }
+      order_transactions: {
+        Row: {
+          amount: number
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          order_id: string
+          status: string
+          transaction_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          order_id: string
+          status?: string
+          transaction_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          order_id?: string
+          status?: string
+          transaction_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           actual_completion_date: string | null
@@ -440,12 +482,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_order_transactions: {
+        Args: {
+          p_automation_cost: number
+          p_order_id: string
+          p_payment_format: string
+          p_selling_price: number
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       handle_deposit: {
         Args: { p_amount: number; p_description?: string; p_user_id: string }
         Returns: boolean
       }
       handle_withdrawal: {
         Args: { p_amount: number; p_description?: string; p_user_id: string }
+        Returns: boolean
+      }
+      update_order_transaction_statuses: {
+        Args: { p_order_id: string; p_order_status: string }
         Returns: boolean
       }
     }

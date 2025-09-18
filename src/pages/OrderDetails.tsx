@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import OrderTransactions from "@/components/OrderTransactions";
 
 const getStatusBadge = (status: string) => {
   const statusConfig = {
@@ -201,6 +202,16 @@ export default function OrderDetails() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Order Transactions */}
+              <OrderTransactions
+                orderId={order.id}
+                userId={order.user_id}
+                sellingPrice={order.agreed_price}
+                automationCost={parseFloat(order.automation_price?.replace(/[^0-9.-]+/g, '') || '0')}
+                paymentFormat={order.payment_format}
+                orderStatus={order.status}
+              />
 
               {/* Social Media Information */}
               <Card>
