@@ -226,15 +226,36 @@ export default function OrderTransactions({
                 <div>
                   <p className="font-medium text-green-800">Your Earnings</p>
                   <p className="text-sm text-green-600">
-                    {transactions.find(t => t.transaction_type === 'payment')?.status === 'pending' 
-                      ? 'Payment pending' 
-                      : 'Payment completed'}
+                    {(() => {
+                      const paymentTransaction = transactions.find(t => t.transaction_type === 'payment');
+                      const isCompleted = paymentTransaction?.status === 'completed';
+                      const isClientPaid = orderStatus === 'client_paid';
+                      
+                      if (isCompleted) {
+                        return 'Payment completed and added to wallet';
+                      } else if (isClientPaid) {
+                        return 'Payment pending';
+                      } else {
+                        return 'Awaiting client payment';
+                      }
+                    })()}
                   </p>
-                  {transactions.find(t => t.transaction_type === 'payment')?.due_date && (
-                    <p className="text-xs text-green-600">
-                      Expected: {new Date(transactions.find(t => t.transaction_type === 'payment')!.due_date!).toLocaleDateString()}
-                    </p>
-                  )}
+                  {(() => {
+                    const paymentTransaction = transactions.find(t => t.transaction_type === 'payment');
+                    const isCompleted = paymentTransaction?.status === 'completed';
+                    const isClientPaid = orderStatus === 'client_paid';
+                    const hasExpectedDate = paymentTransaction?.due_date;
+                    
+                    // Only show expected date when status is client_paid and payment is not completed
+                    if (isClientPaid && !isCompleted && hasExpectedDate) {
+                      return (
+                        <p className="text-xs text-green-600">
+                          Expected: {new Date(paymentTransaction.due_date!).toLocaleDateString()}
+                        </p>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
               </div>
               <div className="text-right">
