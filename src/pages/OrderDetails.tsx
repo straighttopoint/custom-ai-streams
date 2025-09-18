@@ -63,6 +63,50 @@ export default function OrderDetails() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
+  const handleTabChange = (tab: string) => {
+    // Navigate to the appropriate route based on tab
+    switch (tab) {
+      case "marketplace":
+        navigate("/dashboard");
+        break;
+      case "automation-list":
+        window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'automation-list' }));
+        navigate("/dashboard");
+        break;
+      case "custom-requests":
+        window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'custom-requests' }));
+        navigate("/dashboard");
+        break;
+      case "active-orders":
+        window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'active-orders' }));
+        navigate("/dashboard");
+        break;
+      case "new-order":
+        window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'new-order' }));
+        navigate("/dashboard");
+        break;
+      case "analytics":
+        window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'analytics' }));
+        navigate("/dashboard");
+        break;
+      case "support":
+        window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'support' }));
+        navigate("/dashboard");
+        break;
+      case "withdraw":
+        navigate("/withdraw");
+        break;
+      case "deposit":
+        navigate("/deposit");
+        break;
+      case "transaction-history":
+        navigate("/transaction-history");
+        break;
+      default:
+        setActiveTab(tab);
+    }
+  };
+
   const fetchOrder = async () => {
     if (!user || !id) return;
     
@@ -100,12 +144,12 @@ export default function OrderDetails() {
       <div className="flex h-screen overflow-hidden">
         {/* Desktop Sidebar */}
         <div className="hidden md:block">
-          <Sidebar
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            isCollapsed={isSidebarCollapsed}
-            onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          />
+        <Sidebar
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
         </div>
 
         {/* Mobile Sidebar Sheet */}
@@ -114,15 +158,15 @@ export default function OrderDetails() {
             <SheetHeader>
               <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
             </SheetHeader>
-            <Sidebar
-              activeTab={activeTab}
-              onTabChange={(tab) => {
-                setActiveTab(tab);
-                setIsMobileSidebarOpen(false);
-              }}
-              isCollapsed={false}
-              onToggleCollapse={() => {}}
-            />
+          <Sidebar
+            activeTab={activeTab}
+            onTabChange={(tab) => {
+              handleTabChange(tab);
+              setIsMobileSidebarOpen(false);
+            }}
+            isCollapsed={false}
+            onToggleCollapse={() => {}}
+          />
           </SheetContent>
         </Sheet>
         
@@ -166,7 +210,7 @@ export default function OrderDetails() {
       <div className="hidden md:block">
         <Sidebar
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
@@ -181,7 +225,7 @@ export default function OrderDetails() {
           <Sidebar
             activeTab={activeTab}
             onTabChange={(tab) => {
-              setActiveTab(tab);
+              handleTabChange(tab);
               setIsMobileSidebarOpen(false);
             }}
             isCollapsed={false}
