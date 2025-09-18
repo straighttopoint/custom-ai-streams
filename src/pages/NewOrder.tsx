@@ -314,6 +314,7 @@ export default function NewOrder() {
       linkedinProfile: "",
       automationId: "",
       projectDescription: "",
+      meetingDate: undefined,
       meetingTime: "",
       paymentFormat: "fixed" as const,
       customPrice: "",
@@ -748,18 +749,18 @@ export default function NewOrder() {
                           <SelectValue placeholder="Choose from your automation list" />
                         </SelectTrigger>
                       </FormControl>
-                       <SelectContent>
-                         {userAutomations.map((userAutomation) => (
-                           <SelectItem key={userAutomation.id} value={userAutomation.automation_id}>
-                             <div className="flex items-center justify-between w-full">
-                               <span>{userAutomation.automations?.title || 'Automation'}</span>
-                               <div className="flex items-center gap-2 ml-4">
-                                 <Badge variant="secondary">{userAutomation.automations?.category?.[0] || 'General'}</Badge>
-                                 <span className="font-semibold text-primary">${userAutomation.automations?.suggested_price || '0'}</span>
-                               </div>
-                             </div>
-                           </SelectItem>
-                         ))}
+                        <SelectContent>
+                          {userAutomations.map((userAutomation) => (
+                            <SelectItem key={userAutomation.automation_id} value={userAutomation.automation_id}>
+                              <div className="flex items-center justify-between w-full">
+                                <span>{userAutomation.automations?.title || 'Automation'}</span>
+                                <div className="flex items-center gap-2 ml-4">
+                                  <Badge variant="secondary">{userAutomation.automations?.category?.[0] || 'General'}</Badge>
+                                  <span className="font-semibold text-primary">${userAutomation.automations?.suggested_price || '0'}</span>
+                                </div>
+                              </div>
+                            </SelectItem>
+                          ))}
                        </SelectContent>
                     </Select>
                     <FormMessage />
