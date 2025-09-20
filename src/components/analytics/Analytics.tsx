@@ -2,39 +2,159 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 import { DollarSign, ShoppingCart, TrendingUp, Users } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect, useState } from "react";
 
-// Mock analytics data
-const salesData = [
-  { month: "Jan", automations: 45, revenue: 6750 },
-  { month: "Feb", automations: 52, revenue: 7800 },
-  { month: "Mar", automations: 48, revenue: 7200 },
-  { month: "Apr", automations: 61, revenue: 9150 },
-  { month: "May", automations: 55, revenue: 8250 },
-  { month: "Jun", automations: 67, revenue: 10050 },
-];
-
-const categoryData = [
-  { name: "Social Media", value: 35, color: "hsl(var(--primary))" },
-  { name: "Email Marketing", value: 25, color: "hsl(var(--secondary))" },
-  { name: "Lead Generation", value: 20, color: "hsl(var(--accent))" },
-  { name: "E-commerce", value: 12, color: "hsl(var(--muted))" },
-  { name: "Analytics", value: 8, color: "hsl(var(--destructive))" },
-];
-
-const revenueData = [
-  { month: "Jan", revenue: 6750 },
-  { month: "Feb", revenue: 7800 },
-  { month: "Mar", revenue: 7200 },
-  { month: "Apr", revenue: 9150 },
-  { month: "May", revenue: 8250 },
-  { month: "Jun", revenue: 10050 },
-];
+interface AnalyticsData {
+  monthlyOrders: { month: string; orders: number; revenue: number }[];
+  categoryData: { name: string; value: number; color: string }[];
+  totalOrders: number;
+  totalRevenue: number;
+  avgOrderValue: number;
+  totalUsers: number;
+  topAutomations: { name: string; sales: number; revenue: number }[];
+}
 
 export function Analytics() {
-  const totalAutomationsSold = salesData.reduce((sum, item) => sum + item.automations, 0);
-  const totalRevenue = salesData.reduce((sum, item) => sum + item.revenue, 0);
-  const avgOrderValue = totalRevenue / totalAutomationsSold;
-  const growthRate = ((salesData[5].revenue - salesData[0].revenue) / salesData[0].revenue * 100);
+  const { user } = useAuth();
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
+    monthlyOrders: [],
+    categoryData: [],
+    totalOrders: 0,
+    totalRevenue: 0,
+    avgOrderValue: 0,
+    totalUsers: 0,
+    topAutomations: []
+  });
+
+  const { data: orders } = useQuery({
+    queryKey: ["orders"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: walletData } = useQuery({
+    queryKey: ["wallet", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from("wallets")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const { data: automations } = useQuery({
+    queryKey: ["automations"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("automations")
+        .select("*");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: userCount } = useQuery({
+    queryKey: ["user-count"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true });
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
+  useEffect(() => {
+    if (orders && automations) {
+      // Process monthly orders data
+      const monthlyOrdersMap = new Map();
+      const categoryMap = new Map();
+      const automationSalesMap = new Map();
+
+      orders.forEach(order => {
+        const date = new Date(order.created_at);
+        const monthKey = date.toLocaleDateString('en-US', { month: 'short' });
+        
+        // Monthly data
+        if (!monthlyOrdersMap.has(monthKey)) {
+          monthlyOrdersMap.set(monthKey, { month: monthKey, orders: 0, revenue: 0 });
+        }
+        const monthData = monthlyOrdersMap.get(monthKey);
+        monthData.orders += 1;
+        
+        // Parse agreed_price (e.g., "$1,000/month" -> 1000)
+        const priceMatch = order.agreed_price?.match(/[\d,]+/);
+        const revenue = priceMatch ? parseInt(priceMatch[0].replace(/,/g, '')) : 0;
+        monthData.revenue += revenue;
+
+        // Category data
+        if (order.automation_category) {
+          categoryMap.set(order.automation_category, (categoryMap.get(order.automation_category) || 0) + 1);
+        }
+
+        // Automation sales
+        if (order.automation_title) {
+          if (!automationSalesMap.has(order.automation_title)) {
+            automationSalesMap.set(order.automation_title, { name: order.automation_title, sales: 0, revenue: 0 });
+          }
+          const automationData = automationSalesMap.get(order.automation_title);
+          automationData.sales += 1;
+          automationData.revenue += revenue;
+        }
+      });
+
+      // Convert to arrays
+      const monthlyOrders = Array.from(monthlyOrdersMap.values());
+      
+      // Category data with colors
+      const categoryColors = [
+        "hsl(var(--primary))",
+        "hsl(var(--secondary))",
+        "hsl(var(--accent))",
+        "hsl(var(--muted))",
+        "hsl(var(--destructive))"
+      ];
+      
+      const categoryData = Array.from(categoryMap.entries()).map(([name, value], index) => ({
+        name,
+        value,
+        color: categoryColors[index % categoryColors.length]
+      }));
+
+      // Top automations
+      const topAutomations = Array.from(automationSalesMap.values())
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 4);
+
+      // Calculate totals
+      const totalOrders = orders.length;
+      const totalRevenue = monthlyOrders.reduce((sum, item) => sum + item.revenue, 0);
+      const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+      setAnalyticsData({
+        monthlyOrders,
+        categoryData,
+        totalOrders,
+        totalRevenue,
+        avgOrderValue,
+        totalUsers: userCount || 0,
+        topAutomations
+      });
+    }
+  }, [orders, automations, userCount]);
 
   return (
     <div className="space-y-6 overflow-auto">
@@ -51,41 +171,41 @@ export function Analytics() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalAutomationsSold}</div>
-            <p className="text-xs text-muted-foreground">+12% from last month</p>
+            <div className="text-2xl font-bold">{analyticsData.totalOrders}</div>
+            <p className="text-xs text-muted-foreground">Total orders placed</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Your Earnings</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">+{growthRate.toFixed(1)}% from first month</p>
+            <div className="text-2xl font-bold">${walletData?.total_earned?.toLocaleString() || '0'}</div>
+            <p className="text-xs text-muted-foreground">Total earned from sales</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Order Value</CardTitle>
+            <CardTitle className="text-sm font-medium">Available Balance</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${avgOrderValue.toFixed(0)}</div>
-            <p className="text-xs text-muted-foreground">+3% from last month</p>
+            <div className="text-2xl font-bold">${walletData?.available_for_withdrawal?.toLocaleString() || '0'}</div>
+            <p className="text-xs text-muted-foreground">Ready for withdrawal</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Customers</CardTitle>
+            <CardTitle className="text-sm font-medium">Platform Users</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,284</div>
-            <p className="text-xs text-muted-foreground">+8% from last month</p>
+            <div className="text-2xl font-bold">{analyticsData.totalUsers}</div>
+            <p className="text-xs text-muted-foreground">Total registered users</p>
           </CardContent>
         </Card>
       </div>
@@ -108,7 +228,7 @@ export function Analytics() {
               className="h-[300px]"
             >
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={salesData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <BarChart data={analyticsData.monthlyOrders} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <XAxis 
                     dataKey="month" 
                     stroke="hsl(var(--muted-foreground))"
@@ -124,7 +244,7 @@ export function Analytics() {
                     tickFormatter={(value) => `${value}`}
                   />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="automations" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="orders" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -147,7 +267,7 @@ export function Analytics() {
               className="h-[300px]"
             >
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={revenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <LineChart data={analyticsData.monthlyOrders} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <XAxis 
                     dataKey="month" 
                     stroke="hsl(var(--muted-foreground))"
@@ -197,7 +317,7 @@ export function Analytics() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={categoryData}
+                    data={analyticsData.categoryData}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -208,7 +328,7 @@ export function Analytics() {
                     stroke="hsl(var(--background))"
                     strokeWidth={2}
                   >
-                    {categoryData.map((entry, index) => (
+                    {analyticsData.categoryData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
@@ -229,22 +349,24 @@ export function Analytics() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                { name: "Social Media Content Calendar", sales: 67, revenue: 10050 },
-                { name: "Email Marketing Automation", sales: 45, revenue: 5400 },
-                { name: "Lead Qualification System", sales: 38, revenue: 7600 },
-                { name: "E-commerce Order Processing", sales: 32, revenue: 4800 },
-              ].map((automation, index) => (
-                <div key={automation.name} className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{automation.name}</p>
-                    <p className="text-sm text-muted-foreground">{automation.sales} sales</p>
+              {analyticsData.topAutomations.length > 0 ? (
+                analyticsData.topAutomations.map((automation, index) => (
+                  <div key={automation.name} className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{automation.name}</p>
+                      <p className="text-sm text-muted-foreground">{automation.sales} sales</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">${automation.revenue.toLocaleString()}</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold">${automation.revenue.toLocaleString()}</p>
-                  </div>
+                ))
+              ) : (
+                <div className="text-center text-muted-foreground py-8">
+                  <p>No order data available yet.</p>
+                  <p className="text-sm">Start selling automations to see analytics!</p>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
