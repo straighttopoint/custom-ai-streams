@@ -14,7 +14,7 @@ const Index = () => {
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <Bot className="h-8 w-8 text-primary" />
-              <span className="ml-2 text-xl font-bold">Let Us Defy</span>
+              <span className="ml-2 text-xl font-bold">Letusdify</span>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
               <div className="hidden md:flex items-center space-x-4">
@@ -62,7 +62,7 @@ const Index = () => {
       <section className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">How Let Us Defy Works</h2>
+            <h2 className="text-3xl font-bold mb-4">How Letusdify Works</h2>
             <p className="text-muted-foreground text-lg">Simple steps to start selling AI automations</p>
           </div>
           
@@ -108,7 +108,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl font-bold mb-6">Why Choose Let Us Defy?</h2>
+              <h2 className="text-3xl font-bold mb-6">Why Choose Letusdify?</h2>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <CheckCircle className="h-6 w-6 text-success mt-0.5" />
@@ -161,10 +161,10 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center">
               <Bot className="h-6 w-6 text-primary" />
-              <span className="ml-2 font-semibold">Let Us Defy</span>
+              <span className="ml-2 font-semibold">Letusdify</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2024 Let Us Defy. All rights reserved.
+              © 2024 Letusdify. All rights reserved.
             </p>
           </div>
         </div>

@@ -76,7 +76,7 @@ export function Sidebar({ activeTab, onTabChange, isCollapsed, onToggleCollapse 
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div>
-              <h1 className="text-xl font-bold text-primary">Let Us Defy</h1>
+              <h1 className="text-xl font-bold text-primary">Letusdify</h1>
               <p className="text-sm text-muted-foreground">AI Automation Platform</p>
             </div>
           )}
