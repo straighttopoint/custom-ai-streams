@@ -311,49 +311,7 @@ export function Analytics() {
           </CardContent>
         </Card>
 
-        {/* Category Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Orders by Category</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer
-              config={{
-                category: {
-                  label: "Category",
-                },
-              }}
-              className="h-[250px] md:h-[300px]"
-            >
-              <ResponsiveContainer width="100%" height="100%" minHeight={200}>
-                <PieChart>
-                  <Pie
-                    data={analyticsData.categoryData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    stroke="hsl(var(--background))"
-                    strokeWidth={2}
-                  >
-                    {analyticsData.categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <ChartTooltip 
-                    content={<ChartTooltipContent />}
-                    formatter={(value) => [`${value}%`, "Percentage"]}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-
-        {/* Top Performing Automations */}
+        {/* Your Most Ordered Automations */}
         <Card>
           <CardHeader>
             <CardTitle>Your Most Ordered Automations</CardTitle>
