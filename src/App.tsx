@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { AuthProvider } from "@/hooks/useAuth";
 import { WalletProvider } from "@/hooks/useWallet";
 import { SecurityProvider } from "@/components/SecurityProvider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
@@ -18,14 +19,17 @@ import TransactionHistoryPage from "./pages/TransactionHistoryPage";
 import NotFound from "./pages/NotFound";
 import "./App.css"
 
+const queryClient = new QueryClient();
+
 const App = () => (
   <>
       <Toaster />
       <Sonner />
-      <SecurityProvider>
-        <AuthProvider>
-          <WalletProvider>
-            <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <SecurityProvider>
+          <AuthProvider>
+            <WalletProvider>
+              <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
@@ -40,10 +44,11 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-            </BrowserRouter>
-          </WalletProvider>
-        </AuthProvider>
-      </SecurityProvider>
+              </BrowserRouter>
+            </WalletProvider>
+          </AuthProvider>
+        </SecurityProvider>
+      </QueryClientProvider>
   </>
 );
 
