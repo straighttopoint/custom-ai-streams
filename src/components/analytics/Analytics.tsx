@@ -30,14 +30,17 @@ export function Analytics() {
   });
 
   const { data: orders } = useQuery({
-    queryKey: ["orders"],
+    queryKey: ["user-orders", user?.id],
     queryFn: async () => {
+      if (!user?.id) return [];
       const { data, error } = await supabase
         .from("orders")
-        .select("*");
+        .select("*")
+        .eq("user_id", user.id);
       if (error) throw error;
       return data;
     },
+    enabled: !!user?.id,
   });
 
   const { data: walletData } = useQuery({
@@ -55,30 +58,38 @@ export function Analytics() {
     enabled: !!user?.id,
   });
 
-  const { data: automations } = useQuery({
-    queryKey: ["automations"],
+  const { data: userAutomations } = useQuery({
+    queryKey: ["user-automations", user?.id],
     queryFn: async () => {
+      if (!user?.id) return [];
       const { data, error } = await supabase
-        .from("automations")
-        .select("*");
+        .from("user_automations")
+        .select("automation_id, automations(*)")
+        .eq("user_id", user.id)
+        .eq("is_active", true);
       if (error) throw error;
       return data;
     },
+    enabled: !!user?.id,
   });
 
-  const { data: userCount } = useQuery({
-    queryKey: ["user-count"],
+  const { data: completedOrdersCount } = useQuery({
+    queryKey: ["completed-orders-count", user?.id],
     queryFn: async () => {
+      if (!user?.id) return 0;
       const { count, error } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true });
+        .from("orders")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("status", "order_completed");
       if (error) throw error;
       return count || 0;
     },
+    enabled: !!user?.id,
   });
 
   useEffect(() => {
-    if (orders && automations) {
+    if (orders) {
       // Process monthly orders data
       const monthlyOrdersMap = new Map();
       const categoryMap = new Map();
@@ -150,29 +161,29 @@ export function Analytics() {
         totalOrders,
         totalRevenue,
         avgOrderValue,
-        totalUsers: userCount || 0,
+        totalUsers: completedOrdersCount || 0,
         topAutomations
       });
     }
-  }, [orders, automations, userCount]);
+  }, [orders, completedOrdersCount]);
 
   return (
-    <div className="space-y-6 overflow-auto">
+    <div className="space-y-6 overflow-auto p-4 md:p-6">
       <div>
-        <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-        <p className="text-muted-foreground">Overview of your automation marketplace performance</p>
+        <h1 className="text-2xl md:text-3xl font-bold">Your Analytics</h1>
+        <p className="text-muted-foreground">Overview of your automation sales performance</p>
       </div>
 
       {/* Key Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Automations Sold</CardTitle>
+            <CardTitle className="text-sm font-medium">Your Orders</CardTitle>
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{analyticsData.totalOrders}</div>
-            <p className="text-xs text-muted-foreground">Total orders placed</p>
+            <p className="text-xs text-muted-foreground">Total orders you've made</p>
           </CardContent>
         </Card>
 
@@ -200,34 +211,34 @@ export function Analytics() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Platform Users</CardTitle>
+            <CardTitle className="text-sm font-medium">Completed Orders</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{analyticsData.totalUsers}</div>
-            <p className="text-xs text-muted-foreground">Total registered users</p>
+            <p className="text-xs text-muted-foreground">Successfully completed</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
         {/* Sales Over Time */}
         <Card>
           <CardHeader>
-            <CardTitle>Monthly Sales</CardTitle>
+            <CardTitle>Your Monthly Orders</CardTitle>
           </CardHeader>
           <CardContent>
             <ChartContainer
               config={{
                 automations: {
-                  label: "Automations Sold",
+                  label: "Orders Placed",
                   color: "hsl(var(--primary))",
                 },
               }}
-              className="h-[300px]"
+              className="h-[250px] md:h-[300px]"
             >
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minHeight={200}>
                 <BarChart data={analyticsData.monthlyOrders} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <XAxis 
                     dataKey="month" 
@@ -254,7 +265,7 @@ export function Analytics() {
         {/* Revenue Trend */}
         <Card>
           <CardHeader>
-            <CardTitle>Revenue Trend</CardTitle>
+            <CardTitle>Your Spending Trend</CardTitle>
           </CardHeader>
           <CardContent>
             <ChartContainer
@@ -264,9 +275,9 @@ export function Analytics() {
                   color: "hsl(var(--secondary))",
                 },
               }}
-              className="h-[300px]"
+              className="h-[250px] md:h-[300px]"
             >
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minHeight={200}>
                 <LineChart data={analyticsData.monthlyOrders} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <XAxis 
                     dataKey="month" 
@@ -284,7 +295,7 @@ export function Analytics() {
                   />
                   <ChartTooltip 
                     content={<ChartTooltipContent />}
-                    formatter={(value) => [`$${value}`, "Revenue"]}
+                    formatter={(value) => [`$${value}`, "Amount Spent"]}
                   />
                   <Line 
                     type="monotone" 
@@ -303,7 +314,7 @@ export function Analytics() {
         {/* Category Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle>Sales by Category</CardTitle>
+            <CardTitle>Orders by Category</CardTitle>
           </CardHeader>
           <CardContent>
             <ChartContainer
@@ -312,9 +323,9 @@ export function Analytics() {
                   label: "Category",
                 },
               }}
-              className="h-[300px]"
+              className="h-[250px] md:h-[300px]"
             >
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minHeight={200}>
                 <PieChart>
                   <Pie
                     data={analyticsData.categoryData}
@@ -322,7 +333,7 @@ export function Analytics() {
                     cy="50%"
                     labelLine={false}
                     label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={100}
+                    outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
                     stroke="hsl(var(--background))"
@@ -345,7 +356,7 @@ export function Analytics() {
         {/* Top Performing Automations */}
         <Card>
           <CardHeader>
-            <CardTitle>Top Performing Automations</CardTitle>
+            <CardTitle>Your Most Ordered Automations</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -354,17 +365,18 @@ export function Analytics() {
                   <div key={automation.name} className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">{automation.name}</p>
-                      <p className="text-sm text-muted-foreground">{automation.sales} sales</p>
+                      <p className="text-sm text-muted-foreground">{automation.sales} orders</p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold">${automation.revenue.toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground">total spent</p>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="text-center text-muted-foreground py-8">
                   <p>No order data available yet.</p>
-                  <p className="text-sm">Start selling automations to see analytics!</p>
+                  <p className="text-sm">Start ordering automations to see analytics!</p>
                 </div>
               )}
             </div>
