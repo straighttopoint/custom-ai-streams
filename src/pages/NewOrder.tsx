@@ -442,7 +442,7 @@ export default function NewOrder() {
           automation_category: automationDetails?.category?.[0] || null,
           project_description: data.projectDescription,
           special_requirements: data.specialRequirements || null,
-          meeting_date: format(data.meetingDate, 'PPP p'),
+          meeting_date: `${format(data.meetingDate, 'PPP')} at ${data.meetingTime}`,
           payment_format: data.paymentFormat,
           agreed_price: formattedPrice,
           status: 'under_review'

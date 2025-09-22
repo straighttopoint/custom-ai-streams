@@ -235,21 +235,20 @@ export default function Support() {
           </p>
         </div>
         
-        {tickets.length > 0 && (
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Ticket
-              </Button>
-            </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Create Support Ticket</DialogTitle>
-              <DialogDescription>
-                Describe your issue and we'll get back to you as soon as possible
-              </DialogDescription>
-            </DialogHeader>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Ticket
+            </Button>
+          </DialogTrigger>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Create Support Ticket</DialogTitle>
+            <DialogDescription>
+              Describe your issue and we'll get back to you as soon as possible
+            </DialogDescription>
+          </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="subject">Subject *</Label>
@@ -308,10 +307,9 @@ export default function Support() {
               <Button onClick={handleCreateTicket} className="w-full">
                 Submit Ticket
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-        )}
+          </div>
+        </DialogContent>
+      </Dialog>
       </div>
 
       {tickets.length === 0 ? (
