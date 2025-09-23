@@ -229,7 +229,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'local' });
       logSecurityEvent('SIGNOUT_SUCCESS', {});
       toast({
         title: "Signed Out",
