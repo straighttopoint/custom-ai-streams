@@ -7,6 +7,7 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <div className="h-screen overflow-y-auto">
       {/* Navigation */}
       <nav className="border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -18,7 +19,6 @@ const Pricing = () => {
             <div className="flex items-center space-x-2 sm:space-x-4">
               <div className="hidden md:flex items-center space-x-4">
                 <Button variant="ghost" onClick={() => navigate('/')}>Home</Button>
-                <Button variant="ghost">About</Button>
                 <Button variant="ghost" onClick={() => navigate('/features')}>Features</Button>
               </div>
               <Button variant="outline" onClick={() => navigate('/auth')} size="sm" className="sm:size-default">
@@ -244,6 +244,7 @@ const Pricing = () => {
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 };
