@@ -19,8 +19,8 @@ const Index = () => {
             <div className="flex items-center space-x-2 sm:space-x-4">
               <div className="hidden md:flex items-center space-x-4">
                 <Button variant="ghost">About</Button>
-                <Button variant="ghost">Features</Button>
-                <Button variant="ghost">Pricing</Button>
+                <Button variant="ghost" onClick={() => navigate('/features')}>Features</Button>
+                <Button variant="ghost" onClick={() => navigate('/pricing')}>Pricing</Button>
               </div>
               <Button variant="outline" onClick={() => navigate('/auth')} size="sm" className="sm:size-default">
                 Sign In
@@ -46,13 +46,10 @@ const Index = () => {
             Access professional N8N automations, market them to your clients, and let us handle 
             the technical implementation while you focus on growing your AI agency.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <div className="flex justify-center">
             <Button size="lg" onClick={() => navigate('/dashboard')}>
               Start Selling Today
               <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button variant="outline" size="lg">
-              Watch Demo
             </Button>
           </div>
         </div>
@@ -164,7 +161,7 @@ const Index = () => {
               <span className="ml-2 font-semibold">Letusdify</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2024 Letusdify. All rights reserved.
+              © 2025 Letusdify. All rights reserved.
             </p>
           </div>
         </div>
