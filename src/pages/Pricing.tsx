@@ -131,7 +131,7 @@ const Pricing = () => {
           
           <div className="grid lg:grid-cols-2 gap-12">
             <div>
-              <h3 className="text-xl font-bold mb-6">✅ Included in Every Order</h3>
+              <h3 className="text-xl font-bold mb-6">✅ What's Included</h3>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
@@ -172,34 +172,34 @@ const Pricing = () => {
             </div>
             
             <div>
-              <h3 className="text-xl font-bold mb-6">❌ Additional Costs</h3>
+              <h3 className="text-xl font-bold mb-6">💰 No Extra Charges For</h3>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <X className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
                   <div>
-                    <span className="font-semibold">No Setup Fees</span>
-                    <p className="text-sm text-muted-foreground">Start selling immediately</p>
+                    <span className="font-semibold">No Platform Subscription</span>
+                    <p className="text-sm text-muted-foreground">Pay only per order, not monthly fees</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <X className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
                   <div>
-                    <span className="font-semibold">No Monthly Subscriptions</span>
-                    <p className="text-sm text-muted-foreground">Pay only when you earn</p>
+                    <span className="font-semibold">No Commission on Sales Price</span>
+                    <p className="text-sm text-muted-foreground">We only take 5% of your profit margin, not total sale</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <X className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
                   <div>
-                    <span className="font-semibold">No Hidden Fees</span>
-                    <p className="text-sm text-muted-foreground">Transparent pricing structure</p>
+                    <span className="font-semibold">No Hosting or Infrastructure Costs</span>
+                    <p className="text-sm text-muted-foreground">All automation hosting included in our fees</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <X className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
                   <div>
-                    <span className="font-semibold">No Technical Team Needed</span>
-                    <p className="text-sm text-muted-foreground">We handle all implementation</p>
+                    <span className="font-semibold">No Technical Training Required</span>
+                    <p className="text-sm text-muted-foreground">We handle all technical aspects for you</p>
                   </div>
                 </div>
               </div>
