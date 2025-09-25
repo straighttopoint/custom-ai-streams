@@ -178,10 +178,6 @@ const Features = () => {
               <div className="space-y-3 mb-6">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-success" />
-                  <span className="text-sm">No setup fees or hidden costs</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-success" />
                   <span className="text-sm">Start selling within 24 hours</span>
                 </div>
                 <div className="flex items-center gap-2">
