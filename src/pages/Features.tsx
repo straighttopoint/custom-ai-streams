@@ -190,7 +190,7 @@ const Features = () => {
                 </div>
               </div>
               <Button size="lg" className="w-full" onClick={() => navigate('/dashboard')}>
-                Start Your Free Trial
+                Get Started
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
