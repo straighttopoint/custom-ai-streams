@@ -13,6 +13,7 @@ interface SecurityEvent {
   userAgent: string;
   url: string;
   sessionId: string;
+  client_ip?: string;
 }
 
 serve(async (req) => {
@@ -141,7 +142,7 @@ async function sendSecurityAlert(event: SecurityEvent) {
     event: event.event,
     details: event.details,
     timestamp: event.timestamp,
-    ip: event.client_ip
+    ip: event.client_ip || 'unknown'
   })
 
   // You could integrate with services like:

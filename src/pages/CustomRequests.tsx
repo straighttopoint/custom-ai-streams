@@ -16,9 +16,7 @@ interface CustomRequest {
   id: string;
   title: string;
   description: string;
-  requirements: string;
   status: string;
-  priority: string;
   admin_notes: string;
   created_at: string;
 }
@@ -32,7 +30,6 @@ export default function CustomRequests() {
   // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [requirements, setRequirements] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -70,7 +67,6 @@ export default function CustomRequests() {
           user_id: user?.id,
           title,
           description,
-          requirements,
           status: 'pending'
         });
 
@@ -80,7 +76,6 @@ export default function CustomRequests() {
       setIsCreateDialogOpen(false);
       setTitle("");
       setDescription("");
-      setRequirements("");
       fetchRequests();
     } catch (error) {
       console.error('Error creating request:', error);
@@ -175,18 +170,7 @@ export default function CustomRequests() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Detailed description of what you want automated"
-                  className="min-h-[100px]"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="requirements">Technical Requirements</Label>
-                <Textarea
-                  id="requirements"
-                  value={requirements}
-                  onChange={(e) => setRequirements(e.target.value)}
-                  placeholder="Any specific technical requirements, integrations, or platforms"
-                  className="min-h-[80px]"
+                  className="min-h-[120px]"
                 />
               </div>
               
@@ -229,27 +213,16 @@ export default function CustomRequests() {
                       />
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="description-empty">Description *</Label>
-                      <Textarea
-                        id="description-empty"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Detailed description of what you want automated"
-                        className="min-h-[100px]"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="requirements-empty">Technical Requirements</Label>
-                      <Textarea
-                        id="requirements-empty"
-                        value={requirements}
-                        onChange={(e) => setRequirements(e.target.value)}
-                        placeholder="Any specific technical requirements, integrations, or platforms"
-                        className="min-h-[80px]"
-                      />
-                    </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="description-empty">Description *</Label>
+                        <Textarea
+                          id="description-empty"
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          placeholder="Detailed description of what you want automated"
+                          className="min-h-[120px]"
+                        />
+                      </div>
                     
                     <Button onClick={handleCreateRequest} className="w-full">
                       Submit Request
@@ -275,11 +248,6 @@ export default function CustomRequests() {
                           {request.status.replace('_', ' ')}
                         </span>
                       </Badge>
-                      {request.priority && (
-                        <Badge variant={getPriorityVariant(request.priority)}>
-                          {request.priority} priority
-                        </Badge>
-                      )}
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -300,11 +268,6 @@ export default function CustomRequests() {
                                 {request.status.replace('_', ' ')}
                               </span>
                             </Badge>
-                            {request.priority && (
-                              <Badge variant={getPriorityVariant(request.priority)}>
-                                {request.priority} priority
-                              </Badge>
-                            )}
                           </div>
                         </DialogHeader>
                         <div className="space-y-4">
@@ -312,12 +275,6 @@ export default function CustomRequests() {
                             <h4 className="font-medium mb-2">Description</h4>
                             <p className="text-sm text-muted-foreground">{request.description}</p>
                           </div>
-                          {request.requirements && (
-                            <div>
-                              <h4 className="font-medium mb-2">Requirements</h4>
-                              <p className="text-sm text-muted-foreground">{request.requirements}</p>
-                            </div>
-                          )}
                           <div>
                             <h4 className="font-medium mb-2">Created</h4>
                             <p className="text-sm text-muted-foreground">
