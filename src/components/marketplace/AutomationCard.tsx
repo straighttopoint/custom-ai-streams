@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Star, Bot, Plus, Eye, TrendingUp, Check, Trash2 } from "lucide-react";
+import { Star, Bot, Plus, Eye, TrendingUp, Check, Trash2, Crown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,6 +27,7 @@ interface AutomationCardProps {
   media: any;
   status: string;
   isInUserList?: boolean;
+  isExclusive?: boolean;
   onAutomationAdded?: (automationId: string) => void;
   onAutomationRemoved?: (automationId: string) => void;
 }
@@ -45,6 +46,7 @@ export function AutomationCard({
   features,
   status,
   isInUserList = false,
+  isExclusive = false,
   onAutomationAdded,
   onAutomationRemoved
 }: AutomationCardProps) {
@@ -135,6 +137,12 @@ export function AutomationCard({
               </div>
               
               <div className="flex items-center gap-1">
+                {isExclusive && (
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                    <Crown className="w-3 h-3 mr-1" />
+                    Exclusive
+                  </Badge>
+                )}
                 <Badge variant={status === 'Active' ? "default" : "secondary"} className="bg-success text-success-foreground">
                   {status}
                 </Badge>

@@ -26,6 +26,7 @@ type Automation = {
   media: any;
   created_at: string;
   updated_at: string;
+  assigned_user_id?: string | null;
 };
 
 export function Marketplace() {
@@ -178,6 +179,7 @@ export function Marketplace() {
                 key={automation.id} 
                 {...automation} 
                 isInUserList={userAutomations.includes(automation.id)}
+                isExclusive={automation.assigned_user_id === user?.id}
                 onAutomationAdded={handleAutomationAdded}
                 onAutomationRemoved={handleAutomationRemoved}
               />
