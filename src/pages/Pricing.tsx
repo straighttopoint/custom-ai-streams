@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Bot, CheckCircle, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import letusdifyLogo from "@/assets/letusdify-logo.svg";
 
 const Pricing = () => {
   const navigate = useNavigate();
@@ -13,8 +14,7 @@ const Pricing = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <Bot className="h-8 w-8 text-primary" />
-              <span className="ml-2 text-xl font-bold">Letusdify</span>
+              <img src={letusdifyLogo} alt="Letusdify" className="h-8" />
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
               <div className="hidden md:flex items-center space-x-4">
@@ -149,8 +149,7 @@ const Pricing = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center">
-              <Bot className="h-6 w-6 text-primary" />
-              <span className="ml-2 font-semibold">Letusdify</span>
+              <img src={letusdifyLogo} alt="Letusdify" className="h-6" />
             </div>
             <p className="text-sm text-muted-foreground">
               © 2025 Letusdify. All rights reserved.
