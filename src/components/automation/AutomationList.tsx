@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, Bot, Eye, TrendingUp, Trash2, MoreVertical, Plus } from "lucide-react";
+import { Star, Bot, Eye, TrendingUp, Trash2, MoreVertical, Plus, Crown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,6 +33,7 @@ interface AutomationDetails {
   margin: number;
   features: string[];
   status: string;
+  assigned_user_id?: string | null;
 }
 
 export function AutomationList() {
@@ -60,7 +61,7 @@ export function AutomationList() {
       if (userError) throw userError;
       setUserAutomations(userAutomationsData || []);
 
-      // Then get automation details for each automation ID
+      // Get automation details for user's added automations
       if (userAutomationsData && userAutomationsData.length > 0) {
         const automationIds = userAutomationsData.map(ua => ua.automation_id);
         const { data: automationsData, error: automationsError } = await supabase
@@ -69,7 +70,26 @@ export function AutomationList() {
           .in('id', automationIds);
 
         if (automationsError) throw automationsError;
-        setAutomationsDetails(automationsData || []);
+        setAutomationsDetails(automationsData as AutomationDetails[] || []);
+      } else {
+        setAutomationsDetails([]);
+      }
+
+      // Also get exclusive automations for this user
+      const { data: exclusiveAutomations, error: exclusiveError } = await supabase
+        .from('automations')
+        .select('*')
+        .eq('assigned_user_id', user?.id);
+
+      if (exclusiveError) throw exclusiveError;
+      
+      // Add exclusive automations to the existing list
+      if (exclusiveAutomations && exclusiveAutomations.length > 0) {
+        setAutomationsDetails(prev => {
+          const existingIds = prev.map(a => a.id);
+          const newExclusives = exclusiveAutomations.filter(ea => !existingIds.includes(ea.id));
+          return [...prev, ...(newExclusives as AutomationDetails[])];
+        });
       }
     } catch (error) {
       console.error('Error fetching user automations:', error);
@@ -198,14 +218,15 @@ export function AutomationList() {
         </Card>
       ) : (
         <div className="grid gap-6">
-          {userAutomations.map((userAutomation) => {
-            const automationDetails = automationsDetails.find(ad => ad.id === userAutomation.automation_id);
-            if (!automationDetails) return null;
+          {automationsDetails.map((automationDetails) => {
+            // Check if this is from user_automations or just an exclusive automation
+            const userAutomation = userAutomations.find(ua => ua.automation_id === automationDetails.id);
+            const isExclusive = automationDetails.assigned_user_id === user?.id;
             
             const profitMargin = ((automationDetails.profit / automationDetails.suggested_price) * 100).toFixed(1);
             
             return (
-              <Card key={userAutomation.id} className="group hover:shadow-lg transition-all duration-200">
+              <Card key={automationDetails.id} className="group hover:shadow-lg transition-all duration-200">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -224,8 +245,14 @@ export function AutomationList() {
                         </div>
                         
                         <div className="flex items-center gap-2">
-                          <Badge variant={userAutomation.is_active ? "default" : "secondary"} className="bg-success text-success-foreground">
-                            {userAutomation.is_active ? "Active" : "Draft"}
+                          {isExclusive && (
+                            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                              <Crown className="w-3 h-3 mr-1" />
+                              Exclusive
+                            </Badge>
+                          )}
+                          <Badge variant={userAutomation?.is_active ? "default" : "secondary"} className="bg-success text-success-foreground">
+                            {userAutomation?.is_active ? "Active" : isExclusive ? "Available" : "Draft"}
                           </Badge>
                           
                           <DropdownMenu>
@@ -235,32 +262,34 @@ export function AutomationList() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => navigate(`/automation/${userAutomation.automation_id}`)}>
+                              <DropdownMenuItem onClick={() => navigate(`/automation/${automationDetails.id}`)}>
                                 <Eye className="mr-2 h-4 w-4" />
                                 View Details
                               </DropdownMenuItem>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Remove
-                                  </DropdownMenuItem>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Remove Automation</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Are you sure you want to remove "{automationDetails.title}" from your portfolio? This action cannot be undone.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleRemoveAutomation(userAutomation.id)}>
+                              {userAutomation && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                      <Trash2 className="mr-2 h-4 w-4" />
                                       Remove
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
+                                    </DropdownMenuItem>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Remove Automation</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Are you sure you want to remove "{automationDetails.title}" from your portfolio? This action cannot be undone.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => handleRemoveAutomation(userAutomation.id)}>
+                                        Remove
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>

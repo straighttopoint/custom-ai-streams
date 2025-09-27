@@ -56,7 +56,8 @@ export function Marketplace() {
       const { data, error } = await supabase
         .from('automations')
         .select('*')
-        .eq('status', 'Active');
+        .eq('status', 'Active')
+        .is('assigned_user_id', null); // Only show non-exclusive automations
 
       if (error) throw error;
       setAutomations(data || []);
