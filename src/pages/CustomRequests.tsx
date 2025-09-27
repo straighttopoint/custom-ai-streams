@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Clock, CheckCircle, XCircle, Eye, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -71,7 +70,8 @@ export default function CustomRequests() {
           user_id: user?.id,
           title,
           description,
-          requirements
+          requirements,
+          status: 'pending'
         });
 
       if (error) throw error;
@@ -143,62 +143,59 @@ export default function CustomRequests() {
           </p>
         </div>
         
-        {requests.length > 0 && (
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                New Request
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Create Custom Request</DialogTitle>
-                <DialogDescription>
-                  Describe your automation needs and we'll create a custom solution for you
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Title *</Label>
-                  <Input
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Brief title for your automation request"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description *</Label>
-                  <Textarea
-                    id="description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Detailed description of what you want automated"
-                    className="min-h-[100px]"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="requirements">Technical Requirements</Label>
-                  <Textarea
-                    id="requirements"
-                    value={requirements}
-                    onChange={(e) => setRequirements(e.target.value)}
-                    placeholder="Any specific technical requirements, integrations, or platforms"
-                    className="min-h-[80px]"
-                  />
-                </div>
-                
-                
-                <Button onClick={handleCreateRequest} className="w-full">
-                  Submit Request
-                </Button>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              New Request
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Create Custom Request</DialogTitle>
+              <DialogDescription>
+                Describe your automation needs and we'll create a custom solution for you
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Title *</Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Brief title for your automation request"
+                />
               </div>
-            </DialogContent>
-          </Dialog>
-        )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Description *</Label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Detailed description of what you want automated"
+                  className="min-h-[100px]"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="requirements">Technical Requirements</Label>
+                <Textarea
+                  id="requirements"
+                  value={requirements}
+                  onChange={(e) => setRequirements(e.target.value)}
+                  placeholder="Any specific technical requirements, integrations, or platforms"
+                  className="min-h-[80px]"
+                />
+              </div>
+              
+              <Button onClick={handleCreateRequest} className="w-full">
+                Submit Request
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {requests.length === 0 ? (
@@ -207,10 +204,59 @@ export default function CustomRequests() {
             <div className="text-center py-8">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground mb-4">No custom requests yet</p>
-              <Button onClick={() => setIsCreateDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Your First Request
-              </Button>
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Your First Request
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Create Custom Request</DialogTitle>
+                    <DialogDescription>
+                      Describe your automation needs and we'll create a custom solution for you
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="title-empty">Title *</Label>
+                      <Input
+                        id="title-empty"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="Brief title for your automation request"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="description-empty">Description *</Label>
+                      <Textarea
+                        id="description-empty"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Detailed description of what you want automated"
+                        className="min-h-[100px]"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="requirements-empty">Technical Requirements</Label>
+                      <Textarea
+                        id="requirements-empty"
+                        value={requirements}
+                        onChange={(e) => setRequirements(e.target.value)}
+                        placeholder="Any specific technical requirements, integrations, or platforms"
+                        className="min-h-[80px]"
+                      />
+                    </div>
+                    
+                    <Button onClick={handleCreateRequest} className="w-full">
+                      Submit Request
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </CardContent>
         </Card>
@@ -229,9 +275,11 @@ export default function CustomRequests() {
                           {request.status.replace('_', ' ')}
                         </span>
                       </Badge>
-                      <Badge variant={getPriorityVariant(request.priority)}>
-                        {request.priority} priority
-                      </Badge>
+                      {request.priority && (
+                        <Badge variant={getPriorityVariant(request.priority)}>
+                          {request.priority} priority
+                        </Badge>
+                      )}
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -252,9 +300,11 @@ export default function CustomRequests() {
                                 {request.status.replace('_', ' ')}
                               </span>
                             </Badge>
-                            <Badge variant={getPriorityVariant(request.priority)}>
-                              {request.priority} priority
-                            </Badge>
+                            {request.priority && (
+                              <Badge variant={getPriorityVariant(request.priority)}>
+                                {request.priority} priority
+                              </Badge>
+                            )}
                           </div>
                         </DialogHeader>
                         <div className="space-y-4">
