@@ -164,7 +164,7 @@ export default function Support() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'resolved':
-        return <CheckCircle className="h-4 w-4 text-success" />;
+        return <CheckCircle className="h-4 w-4 text-success-foreground" />;
       case 'open':
         return <Clock className="h-4 w-4 text-warning" />;
       case 'closed':

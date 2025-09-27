@@ -86,7 +86,7 @@ export default function CustomRequests() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'done':
-        return <CheckCircle className="h-4 w-4 text-success" />;
+        return <CheckCircle className="h-4 w-4 text-success-foreground" />;
       case 'pending':
         return <Clock className="h-4 w-4 text-warning" />;
       case 'under_development':

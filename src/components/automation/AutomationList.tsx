@@ -51,7 +51,7 @@ export function AutomationList() {
 
   const fetchUserAutomations = async () => {
     try {
-      // First get user automations
+      // Get user automations
       const { data: userAutomationsData, error: userError } = await supabase
         .from('user_automations')
         .select('*')
@@ -61,36 +61,35 @@ export function AutomationList() {
       if (userError) throw userError;
       setUserAutomations(userAutomationsData || []);
 
-      // Get automation details for user's added automations
-      if (userAutomationsData && userAutomationsData.length > 0) {
-        const automationIds = userAutomationsData.map(ua => ua.automation_id);
-        const { data: automationsData, error: automationsError } = await supabase
+      // Get automation details for user automations
+      const automationIds = userAutomationsData?.map(ua => ua.automation_id) || [];
+      
+      let userAutomationsDetails: any[] = [];
+      if (automationIds.length > 0) {
+        const { data: userAutomationsData2, error: userError2 } = await supabase
           .from('automations')
           .select('*')
           .in('id', automationIds);
 
-        if (automationsError) throw automationsError;
-        setAutomationsDetails(automationsData as AutomationDetails[] || []);
-      } else {
-        setAutomationsDetails([]);
+        if (userError2) throw userError2;
+        userAutomationsDetails = userAutomationsData2 || [];
       }
 
-      // Also get exclusive automations for this user
+      // Get exclusive automations
       const { data: exclusiveAutomations, error: exclusiveError } = await supabase
         .from('automations')
         .select('*')
         .eq('assigned_user_id', user?.id);
 
       if (exclusiveError) throw exclusiveError;
-      
-      // Add exclusive automations to the existing list
-      if (exclusiveAutomations && exclusiveAutomations.length > 0) {
-        setAutomationsDetails(prev => {
-          const existingIds = prev.map(a => a.id);
-          const newExclusives = exclusiveAutomations.filter(ea => !existingIds.includes(ea.id));
-          return [...prev, ...(newExclusives as AutomationDetails[])];
-        });
-      }
+
+      // Combine and deduplicate
+      const combined = userAutomationsDetails.concat(exclusiveAutomations || []);
+      const unique = combined.filter((automation, index, self) => 
+        index === self.findIndex(a => a.id === automation.id)
+      );
+
+      setAutomationsDetails(unique);
     } catch (error) {
       console.error('Error fetching user automations:', error);
       toast.error("Failed to load your automations");
@@ -198,7 +197,7 @@ export function AutomationList() {
         </Card>
       </div>
 
-      {userAutomations.length === 0 ? (
+      {automationsDetails.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
             <Bot className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
@@ -219,7 +218,6 @@ export function AutomationList() {
       ) : (
         <div className="grid gap-6">
           {automationsDetails.map((automationDetails) => {
-            // Check if this is from user_automations or just an exclusive automation
             const userAutomation = userAutomations.find(ua => ua.automation_id === automationDetails.id);
             const isExclusive = automationDetails.assigned_user_id === user?.id;
             

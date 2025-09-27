@@ -91,7 +91,7 @@ export default function TransactionHistory() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="h-4 w-4 text-success" />;
+        return <CheckCircle className="h-4 w-4 text-success-foreground" />;
       case 'pending':
         return <Clock className="h-4 w-4 text-warning" />;
       case 'failed':
