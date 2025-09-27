@@ -18,11 +18,8 @@ interface CustomRequest {
   title: string;
   description: string;
   requirements: string;
-  budget_range: string;
   status: string;
   priority: string;
-  estimated_cost: number;
-  estimated_delivery: string;
   admin_notes: string;
   created_at: string;
 }
@@ -37,7 +34,6 @@ export default function CustomRequests() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [requirements, setRequirements] = useState("");
-  const [budgetRange, setBudgetRange] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -75,8 +71,7 @@ export default function CustomRequests() {
           user_id: user?.id,
           title,
           description,
-          requirements,
-          budget_range: budgetRange
+          requirements
         });
 
       if (error) throw error;
@@ -86,7 +81,6 @@ export default function CustomRequests() {
       setTitle("");
       setDescription("");
       setRequirements("");
-      setBudgetRange("");
       fetchRequests();
     } catch (error) {
       console.error('Error creating request:', error);
@@ -96,7 +90,7 @@ export default function CustomRequests() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'done':
         return <CheckCircle className="h-4 w-4 text-success" />;
       case 'pending':
         return <Clock className="h-4 w-4 text-warning" />;
@@ -109,14 +103,12 @@ export default function CustomRequests() {
 
   const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
-      case 'completed':
+      case 'done':
         return 'default';
       case 'pending':
         return 'secondary';
       case 'rejected':
         return 'destructive';
-      case 'in_progress':
-        return 'outline';
       default:
         return 'outline';
     }
@@ -199,21 +191,6 @@ export default function CustomRequests() {
                   />
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="budget">Budget Range</Label>
-                  <Select value={budgetRange} onValueChange={setBudgetRange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your budget range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="under-500">Under $500</SelectItem>
-                      <SelectItem value="500-1000">$500 - $1,000</SelectItem>
-                      <SelectItem value="1000-2500">$1,000 - $2,500</SelectItem>
-                      <SelectItem value="2500-5000">$2,500 - $5,000</SelectItem>
-                      <SelectItem value="over-5000">Over $5,000</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
                 
                 <Button onClick={handleCreateRequest} className="w-full">
                   Submit Request
@@ -291,24 +268,12 @@ export default function CustomRequests() {
                               <p className="text-sm text-muted-foreground">{request.requirements}</p>
                             </div>
                           )}
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <h4 className="font-medium mb-2">Budget Range</h4>
-                              <p className="text-sm text-muted-foreground">{request.budget_range || 'Not specified'}</p>
-                            </div>
-                            <div>
-                              <h4 className="font-medium mb-2">Created</h4>
-                              <p className="text-sm text-muted-foreground">
-                                {format(new Date(request.created_at), 'MMM dd, yyyy HH:mm')}
-                              </p>
-                            </div>
+                          <div>
+                            <h4 className="font-medium mb-2">Created</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {format(new Date(request.created_at), 'MMM dd, yyyy HH:mm')}
+                            </p>
                           </div>
-                          {request.estimated_cost && (
-                            <div>
-                              <h4 className="font-medium mb-2">Estimated Cost</h4>
-                              <p className="text-sm text-muted-foreground">${request.estimated_cost}</p>
-                            </div>
-                          )}
                           {request.admin_notes && (
                             <div>
                               <h4 className="font-medium mb-2">Admin Notes</h4>
@@ -330,8 +295,7 @@ export default function CustomRequests() {
                     : request.description
                   }
                 </CardDescription>
-                <div className="flex justify-between items-center text-sm text-muted-foreground">
-                  <span>Budget: {request.budget_range || 'Not specified'}</span>
+                <div className="flex justify-end items-center text-sm text-muted-foreground">
                   <span>Created {format(new Date(request.created_at), 'MMM dd')}</span>
                 </div>
               </CardContent>
