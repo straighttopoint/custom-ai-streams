@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, Bot, Eye, TrendingUp, Trash2, MoreVertical, Plus, Crown } from "lucide-react";
+import { Star, Bot, Eye, Trash2, MoreVertical, Plus, Crown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -42,12 +42,25 @@ export function AutomationList() {
   const [userAutomations, setUserAutomations] = useState<UserAutomation[]>([]);
   const [automationsDetails, setAutomationsDetails] = useState<AutomationDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchUserAutomations();
+      checkAdminStatus();
     }
   }, [user]);
+
+  const checkAdminStatus = async () => {
+    try {
+      const { data, error } = await supabase.rpc('is_admin');
+      if (!error) {
+        setIsAdmin(data || false);
+      }
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    }
+  };
 
   const fetchUserAutomations = async () => {
     setLoading(true);
@@ -172,23 +185,6 @@ export function AutomationList() {
           <h2 className="text-3xl font-bold tracking-tight">My Automations</h2>
           <p className="text-muted-foreground">Manage your automation portfolio and track performance</p>
         </div>
-        
-        <Card className="p-4">
-          <div className="flex items-center space-x-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-primary">{automationsDetails.length}</p>
-              <p className="text-sm text-muted-foreground">Active</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-success">
-                ${automationsDetails.reduce((sum, automation) => {
-                  return sum + parseFloat(generateRevenue(automation.cost));
-                }, 0).toFixed(2)}
-              </p>
-              <p className="text-sm text-muted-foreground">Monthly Revenue</p>
-            </div>
-          </div>
-        </Card>
       </div>
 
       {automationsDetails.length === 0 ? (
@@ -255,7 +251,7 @@ export function AutomationList() {
                           <Eye className="w-4 h-4 mr-2" />
                           View Details
                         </DropdownMenuItem>
-                        {userAutomation && (
+                        {userAutomation && isAdmin && (
                           <DropdownMenuItem 
                             onClick={() => handleToggleActive(automationDetails.id, userAutomation.is_active)}
                           >
@@ -333,10 +329,7 @@ export function AutomationList() {
                       
                       <div>
                         <p className="text-sm font-medium text-muted-foreground mb-1">Estimated Monthly Revenue</p>
-                        <div className="flex items-center gap-2">
-                          <p className="text-lg font-semibold text-success">${generateRevenue(automationDetails.cost)}</p>
-                          <TrendingUp className="w-4 h-4 text-success" />
-                        </div>
+                        <p className="text-lg font-semibold text-success">${generateRevenue(automationDetails.cost)}</p>
                         <p className="text-xs text-muted-foreground">Based on 10 uses/month</p>
                       </div>
                       
