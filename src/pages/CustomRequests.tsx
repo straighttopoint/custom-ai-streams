@@ -89,6 +89,8 @@ export default function CustomRequests() {
         return <CheckCircle className="h-4 w-4 text-success" />;
       case 'pending':
         return <Clock className="h-4 w-4 text-warning" />;
+      case 'under_development':
+        return <Clock className="h-4 w-4 text-primary" />;
       case 'rejected':
         return <XCircle className="h-4 w-4 text-destructive" />;
       default:
@@ -102,6 +104,8 @@ export default function CustomRequests() {
         return 'default';
       case 'pending':
         return 'secondary';
+      case 'under_development':
+        return 'outline';
       case 'rejected':
         return 'destructive';
       default:
