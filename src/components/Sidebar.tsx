@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import letusdifyLogo from "@/assets/letusdify-logo.svg";
 import { 
   Menu, 
   Bot, 
@@ -74,11 +75,12 @@ export function Sidebar({ activeTab, onTabChange, isCollapsed, onToggleCollapse 
     <div className={cn("bg-card border-r max-h-screen border-border transition-all duration-300", isCollapsed ? "w-16" : "w-48 sm:w-64")}>
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between">
-          {!isCollapsed && (
-            <div>
-              <h1 className="text-xl font-bold text-primary">Letusdify</h1>
-              <p className="text-sm text-muted-foreground">AI Automation Platform</p>
+          {!isCollapsed ? (
+            <div className="flex items-center gap-2">
+              <img src={letusdifyLogo} alt="Letusdify" className="h-8" />
             </div>
+          ) : (
+            <img src={letusdifyLogo} alt="Letusdify" className="h-6 w-6" />
           )}
           <Button
             variant="ghost"

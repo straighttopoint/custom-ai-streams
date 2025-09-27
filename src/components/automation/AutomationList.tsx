@@ -19,7 +19,7 @@ interface UserAutomation {
   updated_at: string;
 }
 
-interface AutomationDetails {
+type AutomationDetails = {
   id: string;
   title: string;
   description: string;
@@ -34,7 +34,7 @@ interface AutomationDetails {
   features: string[];
   status: string;
   assigned_user_id?: string | null;
-}
+};
 
 export function AutomationList() {
   const navigate = useNavigate();
@@ -50,6 +50,7 @@ export function AutomationList() {
   }, [user]);
 
   const fetchUserAutomations = async () => {
+    setLoading(true);
     try {
       // Get user automations
       const { data: userAutomationsData, error: userError } = await supabase
@@ -61,35 +62,44 @@ export function AutomationList() {
       if (userError) throw userError;
       setUserAutomations(userAutomationsData || []);
 
+      const automationsList: AutomationDetails[] = [];
+
       // Get automation details for user automations
-      const automationIds = userAutomationsData?.map(ua => ua.automation_id) || [];
-      
-      let userAutomationsDetails: any[] = [];
-      if (automationIds.length > 0) {
-        const { data: userAutomationsData2, error: userError2 } = await supabase
+      if (userAutomationsData && userAutomationsData.length > 0) {
+        const automationIds = userAutomationsData.map(ua => ua.automation_id);
+        const { data: userAutomationsDetailsData, error: detailsError } = await supabase
           .from('automations')
           .select('*')
           .in('id', automationIds);
 
-        if (userError2) throw userError2;
-        userAutomationsDetails = userAutomationsData2 || [];
+        if (detailsError) throw detailsError;
+        if (userAutomationsDetailsData) {
+          automationsList.push(...(userAutomationsDetailsData as AutomationDetails[]));
+        }
       }
 
-      // Get exclusive automations
-      const { data: exclusiveAutomations, error: exclusiveError } = await supabase
+      // Get exclusive automations - using any to avoid TS inference issues
+      const exclusiveResult: any = await supabase
         .from('automations')
         .select('*')
         .eq('assigned_user_id', user?.id);
+      
+      const exclusiveAutomations = exclusiveResult.data;
+      const exclusiveError = exclusiveResult.error;
 
       if (exclusiveError) throw exclusiveError;
 
-      // Combine and deduplicate
-      const combined = userAutomationsDetails.concat(exclusiveAutomations || []);
-      const unique = combined.filter((automation, index, self) => 
-        index === self.findIndex(a => a.id === automation.id)
-      );
+      // Add exclusive automations that aren't already included
+      if (exclusiveAutomations) {
+        exclusiveAutomations.forEach((exclusive) => {
+          const exclusiveAutomation = exclusive as AutomationDetails;
+          if (!automationsList.find(a => a.id === exclusiveAutomation.id)) {
+            automationsList.push(exclusiveAutomation);
+          }
+        });
+      }
 
-      setAutomationsDetails(unique);
+      setAutomationsDetails(automationsList);
     } catch (error) {
       console.error('Error fetching user automations:', error);
       toast.error("Failed to load your automations");
@@ -98,16 +108,23 @@ export function AutomationList() {
     }
   };
 
-  const handleRemoveAutomation = async (userAutomationId: string) => {
+  const handleRemoveAutomation = async (automationId: string, isExclusive: boolean) => {
     try {
-      const { error } = await supabase
-        .from('user_automations')
-        .delete()
-        .eq('id', userAutomationId);
+      if (!isExclusive) {
+        // Only remove from user_automations if it's not exclusive
+        const { error } = await supabase
+          .from('user_automations')
+          .delete()
+          .eq('automation_id', automationId)
+          .eq('user_id', user?.id);
 
-      if (error) throw error;
+        if (error) throw error;
+      }
 
-      setUserAutomations(prev => prev.filter(auto => auto.id !== userAutomationId));
+      // Update local state
+      setUserAutomations(prev => prev.filter(ua => ua.automation_id !== automationId));
+      setAutomationsDetails(prev => prev.filter(ad => ad.id !== automationId));
+      
       toast.success("Automation removed from your list");
     } catch (error) {
       console.error('Error removing automation:', error);
@@ -115,85 +132,80 @@ export function AutomationList() {
     }
   };
 
+  const handleToggleActive = async (automationId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('user_automations')
+        .update({ is_active: !currentStatus })
+        .eq('automation_id', automationId)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      setUserAutomations(prev => prev.map(ua => 
+        ua.automation_id === automationId 
+          ? { ...ua, is_active: !currentStatus }
+          : ua
+      ));
+      
+      toast.success(`Automation ${!currentStatus ? 'activated' : 'deactivated'}`);
+    } catch (error) {
+      console.error('Error toggling automation status:', error);
+      toast.error("Failed to update automation status");
+    }
+  };
+
+  const generateRevenue = (costPerUse: number, monthlyUses: number = 10) => {
+    return (costPerUse * monthlyUses * 0.7).toFixed(2); // 70% of gross revenue
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(price);
+  };
+
+  const formatCategory = (categories: string[]) => {
+    return categories.join(', ');
+  };
+
+  const formatPlatforms = (platforms: string[]) => {
+    return platforms.join(', ');
+  };
+
   if (loading) {
     return (
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold">Your Automation Portfolio</h2>
-        <div className="flex items-center justify-center py-12">
-          <p className="text-muted-foreground">Loading your automations...</p>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  const totalProfit = automationsDetails.reduce((sum, automation) => sum + automation.profit, 0);
-  const totalCost = automationsDetails.reduce((sum, automation) => sum + automation.cost, 0);
-  const averageRating = automationsDetails.length > 0 
-    ? (automationsDetails.reduce((sum, automation) => sum + automation.rating, 0) / automationsDetails.length).toFixed(1)
-    : "0.0";
-
   return (
-    <div className="space-y-6 overflow-auto">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">My Automations</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage your automation portfolio. Configure, activate, and monitor your AI automations.
-          </p>
+          <h2 className="text-3xl font-bold tracking-tight">My Automations</h2>
+          <p className="text-muted-foreground">Manage your automation portfolio and track performance</p>
         </div>
-        <div className="flex gap-2">
-          {userAutomations.length > 0 && (
-            <Button 
-              onClick={() => {
-                const event = new CustomEvent('setActiveTab', { detail: 'marketplace' });
-                window.dispatchEvent(event);
-              }} 
-              variant="outline"
-            >
-              Browse Marketplace
-            </Button>
-          )}
-          <Button 
-            onClick={() => {
-              const event = new CustomEvent('setActiveTab', { detail: 'custom-requests' });
-              window.dispatchEvent(event);
-            }}
-            variant="outline"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Request Custom Automation
-          </Button>
-        </div>
-      </div>
-
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-primary">{userAutomations.length}</div>
-            <p className="text-sm text-muted-foreground">Total Automations</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-success">${totalProfit.toFixed(0)}</div>
-            <p className="text-sm text-muted-foreground">Total Profit Potential</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-destructive">${totalCost.toFixed(0)}</div>
-            <p className="text-sm text-muted-foreground">Total Cost</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold flex items-center gap-1">
-              <Star className="w-5 h-5 fill-warning text-warning" />
-              {averageRating}
+        
+        <Card className="p-4">
+          <div className="flex items-center space-x-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-primary">{automationsDetails.length}</p>
+              <p className="text-sm text-muted-foreground">Active</p>
             </div>
-            <p className="text-sm text-muted-foreground">Average Rating</p>
-          </CardContent>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-success">
+                ${automationsDetails.reduce((sum, automation) => {
+                  return sum + parseFloat(generateRevenue(automation.cost));
+                }, 0).toFixed(2)}
+              </p>
+              <p className="text-sm text-muted-foreground">Monthly Revenue</p>
+            </div>
+          </div>
         </Card>
       </div>
 
@@ -201,16 +213,18 @@ export function AutomationList() {
         <Card>
           <CardContent className="p-8 text-center">
             <Bot className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Automations Yet</h3>
+            <h3 className="text-xl font-semibold mb-2">No Automations Yet</h3>
             <p className="text-muted-foreground mb-4">
-              Start building your automation portfolio by adding automations from the marketplace.
+              Start building your automation portfolio by browsing our marketplace
             </p>
             <Button 
               onClick={() => {
-                const event = new CustomEvent('setActiveTab', { detail: 'marketplace' });
+                const event = new CustomEvent('changeTab', { detail: 'marketplace' });
                 window.dispatchEvent(event);
               }}
+              className="gap-2"
             >
+              <Plus className="w-4 h-4" />
               Browse Marketplace
             </Button>
           </CardContent>
@@ -221,119 +235,146 @@ export function AutomationList() {
             const userAutomation = userAutomations.find(ua => ua.automation_id === automationDetails.id);
             const isExclusive = automationDetails.assigned_user_id === user?.id;
             
-            const profitMargin = ((automationDetails.profit / automationDetails.suggested_price) * 100).toFixed(1);
-            
             return (
-              <Card key={automationDetails.id} className="group hover:shadow-lg transition-all duration-200">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Bot className="w-8 h-8 text-primary" />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
-                            {automationDetails.title}
-                          </h3>
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {automationDetails.description}
-                          </p>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          {isExclusive && (
-                            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                              <Crown className="w-3 h-3 mr-1" />
-                              Exclusive
-                            </Badge>
-                          )}
-                          <Badge variant={userAutomation?.is_active ? "default" : "secondary"} className="bg-success text-success-foreground">
-                            {userAutomation?.is_active ? "Active" : isExclusive ? "Available" : "Draft"}
+              <Card key={automationDetails.id} className="overflow-hidden">
+                <CardHeader className="pb-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CardTitle className="text-xl">{automationDetails.title}</CardTitle>
+                        {isExclusive && (
+                          <Badge variant="secondary" className="bg-amber-100 text-amber-800 gap-1">
+                            <Crown className="w-3 h-3" />
+                            Exclusive
                           </Badge>
-                          
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => navigate(`/automation/${automationDetails.id}`)}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                View Details
-                              </DropdownMenuItem>
-                              {userAutomation && (
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                      <Trash2 className="mr-2 h-4 w-4" />
-                                      Remove
-                                    </DropdownMenuItem>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Remove Automation</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        Are you sure you want to remove "{automationDetails.title}" from your portfolio? This action cannot be undone.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                      <AlertDialogAction onClick={() => handleRemoveAutomation(userAutomation.id)}>
-                                        Remove
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4 mt-3">
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 fill-warning text-warning" />
-                          <span className="text-sm font-medium">{automationDetails.rating}</span>
-                          <span className="text-sm text-muted-foreground">({automationDetails.reviews_count})</span>
-                        </div>
-                        
-                        <Badge variant="outline" className="text-xs">
-                          {automationDetails.category[0]}
+                        )}
+                        <Badge 
+                          variant={userAutomation?.is_active ? "default" : "secondary"}
+                          className={userAutomation?.is_active ? "bg-success text-success-foreground" : ""}
+                        >
+                          {userAutomation?.is_active ? "Active" : "Inactive"}
                         </Badge>
                       </div>
-
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {automationDetails.platforms.slice(0, 3).map((platform, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {platform}
-                          </Badge>
-                        ))}
+                      <p className="text-muted-foreground text-sm leading-relaxed">
+                        {automationDetails.description}
+                      </p>
+                    </div>
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem 
+                          onClick={() => navigate(`/automation/${automationDetails.id}`)}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          View Details
+                        </DropdownMenuItem>
+                        {userAutomation && (
+                          <DropdownMenuItem 
+                            onClick={() => handleToggleActive(automationDetails.id, userAutomation.is_active)}
+                          >
+                            {userAutomation.is_active ? "Deactivate" : "Activate"}
+                          </DropdownMenuItem>
+                        )}
+                        {!isExclusive && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <Trash2 className="w-4 h-4 mr-2 text-destructive" />
+                                <span className="text-destructive">Remove</span>
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Remove Automation</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to remove "{automationDetails.title}" from your automation list? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => handleRemoveAutomation(automationDetails.id, isExclusive)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Remove
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Category</p>
+                        <p className="text-sm">{formatCategory(automationDetails.category)}</p>
+                      </div>
+                      
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Platforms</p>
+                        <p className="text-sm">{formatPlatforms(automationDetails.platforms)}</p>
+                      </div>
+                      
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Rating</p>
+                        <div className="flex items-center gap-1">
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <Star 
+                                key={i} 
+                                className={`w-4 h-4 ${i < automationDetails.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm text-muted-foreground ml-1">
+                            ({automationDetails.reviews_count} reviews)
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Cost per Use</p>
+                        <p className="text-lg font-semibold">{formatPrice(automationDetails.cost)}</p>
+                      </div>
+                      
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Estimated Monthly Revenue</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-lg font-semibold text-success">${generateRevenue(automationDetails.cost)}</p>
+                          <TrendingUp className="w-4 h-4 text-success" />
+                        </div>
+                        <p className="text-xs text-muted-foreground">Based on 10 uses/month</p>
+                      </div>
+                      
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Status</p>
+                        <Badge variant="outline" className="text-xs">
+                          {automationDetails.status}
+                        </Badge>
                       </div>
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-4 gap-4 mt-6 pt-4 border-t border-border">
-                    <div>
-                      <p className="text-xs text-muted-foreground">Your Cost</p>
-                      <p className="font-semibold">${automationDetails.cost}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Suggested Price</p>
-                      <p className="font-semibold">${automationDetails.suggested_price}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Profit</p>
-                      <p className="font-semibold text-success flex items-center gap-1">
-                        <TrendingUp className="w-3 h-3" />
-                        ${automationDetails.profit}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Margin</p>
-                      <p className="font-semibold text-success">{profitMargin}%</p>
+                  
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-2">Key Features</p>
+                    <div className="flex flex-wrap gap-2">
+                      {automationDetails.features.map((feature, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
+                          {feature}
+                        </Badge>
+                      ))}
                     </div>
                   </div>
                 </CardContent>
