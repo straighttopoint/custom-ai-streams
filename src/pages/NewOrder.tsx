@@ -823,7 +823,7 @@ export default function NewOrder() {
                     <Button 
                       type="button" 
                       variant="outline" 
-                      onClick={() => window.open("https://calendly.com/your-company/consultation", "_blank")}
+                      onClick={() => window.open("https://calendly.com/straighttopoint-business/30min", "_blank")}
                       className="flex items-center gap-2"
                     >
                       <ExternalLinkIcon className="w-4 h-4" />
