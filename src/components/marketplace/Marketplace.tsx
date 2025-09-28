@@ -130,6 +130,8 @@ export function Marketplace() {
 
   const sortedAutomations = [...filteredAutomations].sort((a, b) => {
     switch (sortBy) {
+      case "newest":
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       case "rating":
         return b.rating - a.rating;
       case "profit":
@@ -141,7 +143,7 @@ export function Marketplace() {
       case "price-high":
         return b.suggested_price - a.suggested_price;
       default:
-        return 0;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     }
   });
 
