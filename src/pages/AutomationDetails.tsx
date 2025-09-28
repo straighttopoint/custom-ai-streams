@@ -82,6 +82,7 @@ export default function AutomationDetails() {
   const [loading, setLoading] = useState(true);
   const [isInUserList, setIsInUserList] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -257,12 +258,12 @@ export default function AutomationDetails() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Video Demo */}
-                {automation.media?.video && (
+                {automation.media?.video_demo && (
                   <div>
                     <h4 className="font-medium mb-3">Video Demonstration</h4>
                     <AspectRatio ratio={16 / 9} className="bg-muted rounded-lg overflow-hidden">
                       <iframe
-                        src={convertGoogleDriveToEmbedUrl(automation.media.video)}
+                        src={convertGoogleDriveToEmbedUrl(automation.media.video_demo)}
                         className="w-full h-full"
                         allowFullScreen
                         title="Automation Demo Video"
@@ -279,17 +280,27 @@ export default function AutomationDetails() {
                       <AspectRatio 
                         key={index} 
                         ratio={4 / 3} 
-                        className="bg-muted rounded-md overflow-hidden cursor-pointer hover:opacity-75 transition-opacity"
-                        onClick={() => setActiveImageIndex(index)}
+                        className="bg-muted rounded-md overflow-hidden cursor-pointer hover:opacity-75 transition-opacity group"
+                        onClick={() => setFullscreenImage(convertGoogleDriveToDirectUrl(image))}
                       >
                         <img 
                           src={convertGoogleDriveToDirectUrl(image)} 
                           alt={`Screenshot ${index + 1}`}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           onError={(e) => {
+                            console.error(`Failed to load image: ${image}`);
                             e.currentTarget.src = "/placeholder.svg";
                           }}
                         />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="bg-black/50 rounded-full p-2">
+                              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
                       </AspectRatio>
                     )) : (
                       <div className="col-span-3 text-center py-8">
@@ -460,6 +471,31 @@ export default function AutomationDetails() {
           </div>
         </div>
       </div>
+
+      {/* Fullscreen Image Modal */}
+      {fullscreenImage && (
+        <div 
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          onClick={() => setFullscreenImage(null)}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh] w-full h-full flex items-center justify-center">
+            <button
+              onClick={() => setFullscreenImage(null)}
+              className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <img
+              src={fullscreenImage}
+              alt="Fullscreen view"
+              className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
