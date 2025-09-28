@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Search, Filter, SlidersHorizontal, X } from "lucide-react";
+import { Search, Filter, X } from "lucide-react";
 
 interface MarketplaceFiltersProps {
   activeCategory: string;
@@ -150,11 +150,6 @@ export function MarketplaceFilters({
             Available only
           </Label>
         </div>
-
-        <Button variant="outline">
-          <SlidersHorizontal className="w-4 h-4 mr-2" />
-          Filters
-        </Button>
       </div>
 
       {/* Categories */}
