@@ -152,26 +152,6 @@ export function MarketplaceFilters({
         </div>
       </div>
 
-      {/* Categories */}
-      <div>
-        <h3 className="text-sm font-medium mb-3">Categories</h3>
-        <div className="flex flex-wrap gap-2">
-          {categories.map((category) => (
-            <Button
-              key={category.id}
-              variant={activeCategory === category.id ? "default" : "outline"}
-              size="sm"
-              onClick={() => onCategoryChange(category.id)}
-              className={activeCategory === category.id ? "bg-primary text-primary-foreground" : ""}
-            >
-              {category.label}
-              <Badge variant="secondary" className="ml-2 text-xs">
-                {categoryStats[category.id] || 0}
-              </Badge>
-            </Button>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
