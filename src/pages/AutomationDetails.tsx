@@ -44,6 +44,35 @@ type Automation = {
   updated_at: string;
 };
 
+// Utility functions to convert Google Drive URLs
+const convertGoogleDriveToDirectUrl = (url: string): string => {
+  if (!url) return "/placeholder.svg";
+  
+  // Extract file ID from Google Drive URL
+  const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (fileIdMatch) {
+    const fileId = fileIdMatch[1];
+    return `https://drive.google.com/uc?export=view&id=${fileId}`;
+  }
+  
+  // If it's already a direct URL or not a Google Drive URL, return as is
+  return url;
+};
+
+const convertGoogleDriveToEmbedUrl = (url: string): string => {
+  if (!url) return "";
+  
+  // Extract file ID from Google Drive URL
+  const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (fileIdMatch) {
+    const fileId = fileIdMatch[1];
+    return `https://drive.google.com/file/d/${fileId}/preview`;
+  }
+  
+  // If it's already an embed URL or not a Google Drive URL, return as is
+  return url;
+};
+
 export default function AutomationDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -228,18 +257,19 @@ export default function AutomationDetails() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Video Demo */}
-                <div>
-                  <h4 className="font-medium mb-3">Video Demonstration</h4>
-                  <AspectRatio ratio={16 / 9} className="bg-muted rounded-lg overflow-hidden">
-                    <div className="w-full h-full bg-muted flex items-center justify-center">
-                      <div className="text-center">
-                        <Play className="w-16 h-16 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-muted-foreground">Video Demo Preview</p>
-                        <p className="text-sm text-muted-foreground">Click to play automation demo</p>
-                      </div>
-                    </div>
-                  </AspectRatio>
-                </div>
+                {automation.media?.video && (
+                  <div>
+                    <h4 className="font-medium mb-3">Video Demonstration</h4>
+                    <AspectRatio ratio={16 / 9} className="bg-muted rounded-lg overflow-hidden">
+                      <iframe
+                        src={convertGoogleDriveToEmbedUrl(automation.media.video)}
+                        className="w-full h-full"
+                        allowFullScreen
+                        title="Automation Demo Video"
+                      />
+                    </AspectRatio>
+                  </div>
+                )}
 
                 {/* Screenshots */}
                 <div>
@@ -253,9 +283,12 @@ export default function AutomationDetails() {
                         onClick={() => setActiveImageIndex(index)}
                       >
                         <img 
-                          src={image} 
+                          src={convertGoogleDriveToDirectUrl(image)} 
                           alt={`Screenshot ${index + 1}`}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = "/placeholder.svg";
+                          }}
                         />
                       </AspectRatio>
                     )) : (
