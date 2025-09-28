@@ -52,7 +52,8 @@ const convertGoogleDriveToDirectUrl = (url: string): string => {
   const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
   if (fileIdMatch) {
     const fileId = fileIdMatch[1];
-    return `https://drive.google.com/uc?export=view&id=${fileId}`;
+    // Use the thumbnail format which is more reliable for images
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
   }
   
   // If it's already a direct URL or not a Google Drive URL, return as is
