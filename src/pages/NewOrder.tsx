@@ -438,7 +438,7 @@ export default function NewOrder() {
           linkedin_profile: data.linkedinProfile || null,
           automation_id: data.automationId,
           automation_title: automationDetails?.title || 'Unknown Automation',
-          automation_price: `$${automationDetails?.suggested_price || 0}`,
+          automation_price: `$${automationDetails?.cost || 0}`,
           automation_category: automationDetails?.category?.[0] || null,
           project_description: data.projectDescription,
           special_requirements: data.specialRequirements || null,
