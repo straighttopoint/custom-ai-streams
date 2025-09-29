@@ -31,7 +31,11 @@ export function Header() {
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <div className="flex items-center gap-2 bg-success/10 text-success px-2 sm:px-3 py-1 rounded-lg cursor-pointer hover:bg-success/20 transition-colors">
+              <div className={`flex items-center gap-2 px-2 sm:px-3 py-1 rounded-lg cursor-pointer transition-colors ${
+                (wallet?.balance || 0) < 0 
+                  ? 'bg-destructive/10 text-destructive hover:bg-destructive/20' 
+                  : 'bg-success/10 text-success hover:bg-success/20'
+              }`}>
                 <Wallet className="h-4 w-4" />
                 <span className="font-medium text-sm sm:text-base">
                   ${wallet?.balance?.toFixed(2) || '0.00'}

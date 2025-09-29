@@ -189,7 +189,7 @@ export default function TransactionHistory() {
                     <div className={`text-lg font-medium ${
                       transaction.amount >= 0 ? 'text-success' : 'text-destructive'
                     }`}>
-                      {transaction.amount >= 0 ? '+' : ''}${Math.abs(transaction.amount).toFixed(2)}
+                      {transaction.amount >= 0 ? '+' : '-'}${Math.abs(transaction.amount).toFixed(2)}
                     </div>
                   </div>
                 </div>
