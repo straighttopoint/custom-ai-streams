@@ -756,7 +756,7 @@ export default function NewOrder() {
                                 <span>{userAutomation.automations?.title || 'Automation'}</span>
                                 <div className="flex items-center gap-2 ml-4">
                                   <Badge variant="secondary">{userAutomation.automations?.category?.[0] || 'General'}</Badge>
-                                  <span className="font-semibold text-primary">${userAutomation.automations?.suggested_price || '0'}</span>
+                                  <span className="font-semibold text-primary">${userAutomation.automations?.cost || '0'}</span>
                                 </div>
                               </div>
                             </SelectItem>
@@ -776,7 +776,7 @@ export default function NewOrder() {
                       <p className="font-medium">{selectedAutomation.title}</p>
                       <Badge variant="secondary">{selectedAutomation.category?.[0] || 'General'}</Badge>
                     </div>
-                    <span className="text-lg font-bold text-primary">${selectedAutomation.suggested_price}</span>
+                    <span className="text-lg font-bold text-primary">${selectedAutomation.cost}</span>
                   </div>
                 </div>
               )}
