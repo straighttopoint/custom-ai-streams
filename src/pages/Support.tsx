@@ -31,6 +31,7 @@ interface SupportMessage {
   message: string;
   is_admin: boolean;
   created_at: string;
+  updated_at: string;
 }
 
 export default function Support() {
@@ -121,7 +122,7 @@ export default function Support() {
     try {
       const { data, error } = await supabase
         .from('support_messages')
-        .select('*')
+        .select('id, ticket_id, user_id, message, is_admin, created_at, updated_at')
         .eq('ticket_id', ticketId)
         .order('created_at', { ascending: true });
 

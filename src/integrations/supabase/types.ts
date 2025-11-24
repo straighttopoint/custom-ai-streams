@@ -16,10 +16,12 @@ export type Database = {
     Tables: {
       automations: {
         Row: {
+          assigned_user_id: string | null
           category: string[]
           complexity: string | null
           cost: number
           created_at: string
+          custom_request_id: string | null
           description: string | null
           features: string[]
           id: string
@@ -37,10 +39,12 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          assigned_user_id?: string | null
           category?: string[]
           complexity?: string | null
           cost?: number
           created_at?: string
+          custom_request_id?: string | null
           description?: string | null
           features?: string[]
           id?: string
@@ -58,10 +62,12 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          assigned_user_id?: string | null
           category?: string[]
           complexity?: string | null
           cost?: number
           created_at?: string
+          custom_request_id?: string | null
           description?: string | null
           features?: string[]
           id?: string
@@ -78,14 +84,24 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "automations_custom_request_id_fkey"
+            columns: ["custom_request_id"]
+            isOneToOne: false
+            referencedRelation: "custom_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       custom_requests: {
         Row: {
           admin_notes: string | null
+          agreed_price: number | null
           created_at: string
           description: string
           id: string
+          linked_automation_id: string | null
           priority: string | null
           requirements: string | null
           status: string
@@ -95,9 +111,11 @@ export type Database = {
         }
         Insert: {
           admin_notes?: string | null
+          agreed_price?: number | null
           created_at?: string
           description: string
           id?: string
+          linked_automation_id?: string | null
           priority?: string | null
           requirements?: string | null
           status?: string
@@ -107,9 +125,11 @@ export type Database = {
         }
         Update: {
           admin_notes?: string | null
+          agreed_price?: number | null
           created_at?: string
           description?: string
           id?: string
+          linked_automation_id?: string | null
           priority?: string | null
           requirements?: string | null
           status?: string
@@ -117,7 +137,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "custom_requests_linked_automation_id_fkey"
+            columns: ["linked_automation_id"]
+            isOneToOne: false
+            referencedRelation: "automations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_transactions: {
         Row: {
@@ -525,14 +553,8 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      process_automatic_order_completion: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      is_admin: { Args: never; Returns: boolean }
+      process_automatic_order_completion: { Args: never; Returns: number }
       update_order_transaction_statuses: {
         Args: { p_order_id: string; p_order_status: string }
         Returns: boolean
