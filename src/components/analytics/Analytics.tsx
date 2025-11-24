@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { DollarSign, ShoppingCart, TrendingUp, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -257,55 +257,6 @@ export function Analytics() {
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar dataKey="orders" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-
-        {/* Revenue Trend */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Spending Trend</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer
-              config={{
-                revenue: {
-                  label: "Revenue ($)",
-                  color: "hsl(var(--secondary))",
-                },
-              }}
-              className="h-[250px] md:h-[300px]"
-            >
-              <ResponsiveContainer width="100%" height="100%" minHeight={200}>
-                <LineChart data={analyticsData.monthlyOrders} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <XAxis 
-                    dataKey="month" 
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis 
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                  />
-                  <ChartTooltip 
-                    content={<ChartTooltipContent />}
-                    formatter={(value) => [`$${value}`, "Amount Spent"]}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="revenue" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={3}
-                    dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 6 }}
-                    activeDot={{ r: 8, stroke: "hsl(var(--primary))", strokeWidth: 2 }}
-                  />
-                </LineChart>
               </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
